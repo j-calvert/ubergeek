@@ -1,8 +1,9 @@
+package steve;
 import com.cycling74.max.DataTypes;
 import com.cycling74.msp.MSPPerformer;
 import com.cycling74.msp.MSPSignal;
 
-public class GalvoDriver0 extends MSPPerformer {
+public class GalvoDriver extends MSPPerformer {
 
     private static final String[] INLET_ASSIST = new String[] { "messages in" };
 
@@ -10,7 +11,7 @@ public class GalvoDriver0 extends MSPPerformer {
 
     private static final double PI = Math.PI;
 
-    public GalvoDriver0() {
+    public GalvoDriver() {
         declareInlets(new int[] { DataTypes.ALL });
         declareOutlets(new int[] { SIGNAL, SIGNAL, SIGNAL });
 
