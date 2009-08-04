@@ -8,8 +8,9 @@ public class GalvoDriver extends MSPPerformer {
     private static final String[] INLET_ASSIST = new String[] { "messages in" };
 
     private static final String[] OUTLET_ASSIST = new String[] { "x out", "y out", "blanking out" };
-
-    private static final double PI = Math.PI;
+    
+    private float step = .0001f;
+    private float c = 0.0f;
 
     public GalvoDriver() {
         declareInlets(new int[] { DataTypes.ALL });
@@ -17,14 +18,17 @@ public class GalvoDriver extends MSPPerformer {
 
         setInletAssist(INLET_ASSIST);
         setOutletAssist(OUTLET_ASSIST);
+        declareAttribute("step");
 
     }
 
     @Override
     public void perform(MSPSignal[] in, MSPSignal[] out) {
         for (int i = 0; i < out[0].vec.length; i++) {
-            out[0].vec[i] = (float) (Math.cos(i / 32 * PI));
-            out[1].vec[i] = (float) (Math.sin(i / 32 * PI));
+        	c += step;
+            out[0].vec[i] = (float) (5.0 * Math.cos(c));
+            out[1].vec[i] = (float) (5.0 * Math.sin(c));
+            out[2].vec[i] = (float) (5.0 * Math.cos(c));
         }
     }
 
