@@ -37,15 +37,20 @@ public class EdgeTracer extends MSPPerformer {
 	private int spp = 10;
 
 	private int stallIndex;
+	private boolean ready = true;
 
 	public void jit_matrix(String s) {
-		jm.frommatrix(s);
-		int dim[] = jm.getDim();
-		int[] data = new int[dim[0] * dim[1]];
-		scale = Math.max(dim[0], dim[1]);
-		jm.copyMatrixToArray(data);
-		traceEdges(dim[0], dim[1], data);
-		advanceFrame();
+		if (ready) {
+			jm.frommatrix(s);
+			int dim[] = jm.getDim();
+			float[] data = new float[dim[0] * dim[1]];
+			scale = Math.max(dim[0], dim[1]);
+			jm.copyMatrixToArray(data);
+			ready = false;
+			traceEdges(dim[0], dim[1], data);
+			advanceFrame();
+			ready = true;
+		}
 	}
 
 	private void advanceFrame() {
@@ -61,7 +66,7 @@ public class EdgeTracer extends MSPPerformer {
 		this.stallIndex = 0;
 	}
 
-	private void traceEdges(int w, int h, int[] data) {
+	private void traceEdges(int w, int h, float[] data) {
 		Set<Coord> traced = new HashSet<Coord>();
 		for (int j = 0; j < h; j++) {
 			for (int i = 0; i < w; i++) {
@@ -90,7 +95,7 @@ public class EdgeTracer extends MSPPerformer {
 	}
 
 	private Coord trace(Set<Coord> traced, Coord c, List<Coord> edge, int w,
-			int h, int[] data) {
+			int h, float[] data) {
 		for (int i = 0; i < nbrs.length; i++) {
 			int xn = c.x + nbrs[i][0];
 			int yn = c.y + nbrs[i][1];
@@ -107,7 +112,7 @@ public class EdgeTracer extends MSPPerformer {
 		return null;
 	}
 
-	private int getPixel(int[] data, int w, int i, int j) {
+	private float getPixel(float[] data, int w, int i, int j) {
 		return data[i + j * w];
 	}
 
@@ -147,8 +152,6 @@ public class EdgeTracer extends MSPPerformer {
 	private static final String[] OUTLET_ASSIST = new String[] { "x out",
 			"y out", "blanking out" };
 
-	
-	
 	@Override
 	public void perform(MSPSignal[] in, MSPSignal[] out) {
 		for (int i = 0; i < out[0].vec.length; i++) {
@@ -169,8 +172,10 @@ public class EdgeTracer extends MSPPerformer {
 					pointIndex = 0;
 					stallIndex = 0;
 				}
-				out[0].vec[i] = (float) (this.writeEdges.get(edgeIndex).get(pointIndex).x * (1.0 / scale));
-				out[1].vec[i] = (float) (this.writeEdges.get(edgeIndex).get(pointIndex).y * (1.0 / scale));
+				out[0].vec[i] = (float) (this.writeEdges.get(edgeIndex).get(
+						pointIndex).x * (1.0 / scale));
+				out[1].vec[i] = (float) (this.writeEdges.get(edgeIndex).get(
+						pointIndex).y * (1.0 / scale));
 				out[2].vec[i] = (float) (blank(pointIndex));
 				post(edgeIndex + ": " + pointIndex + ": " + stallIndex);
 			} catch (Exception e) {
@@ -185,6 +190,7 @@ public class EdgeTracer extends MSPPerformer {
 
 	private static final int LAS_OFF = 1;
 	private static final int LAS_ON = 0;
+
 	private float blank(int pointIndex) {
 		return pointIndex == 0 ? LAS_OFF : LAS_ON;
 	}
@@ -192,7 +198,7 @@ public class EdgeTracer extends MSPPerformer {
 	public static void main(String[] args) {
 		long total = 0;
 		for (int j = 0; j < 30; j++) {
-			int[] data = new int[240 * 320];
+			float[] data = new float[240 * 320];
 			Random r = new Random();
 			for (int i = 0; i < data.length; i++) {
 				data[i] = r.nextFloat() > .9 ? 1 : 0;
