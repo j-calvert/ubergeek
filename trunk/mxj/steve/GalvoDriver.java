@@ -1,4 +1,5 @@
 package steve;
+import com.cycling74.jitter.JitterMatrix;
 import com.cycling74.max.DataTypes;
 import com.cycling74.msp.MSPPerformer;
 import com.cycling74.msp.MSPSignal;
@@ -19,8 +20,22 @@ public class GalvoDriver extends MSPPerformer {
         setInletAssist(INLET_ASSIST);
         setOutletAssist(OUTLET_ASSIST);
         declareAttribute("step");
-
     }
+    
+    JitterMatrix jm = new JitterMatrix();
+    boolean ready = true;
+    int scale;
+    public void jit_matrix(String s) {
+		if (ready) {
+			jm.frommatrix(s);
+			int dim[] = jm.getDim();
+			int[] data = new int[dim[0] * dim[1]];
+			scale = Math.max(dim[0], dim[1]);
+			jm.copyMatrixToArray(data);
+			ready = false;
+			ready = true;
+		}
+	}
 
     @Override
     public void perform(MSPSignal[] in, MSPSignal[] out) {
