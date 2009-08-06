@@ -24,6 +24,10 @@ public abstract class Tracer extends MSPPerformer {
 		setInletAssist(INLET_ASSIST);
 		setOutletAssist(OUTLET_ASSIST);
 		declareAttribute("spp");
+		List<Coord> initiEdge = new ArrayList<Coord>();
+		initiEdge.add(new Coord(0,0));
+		readTraces.add(initiEdge);
+		advanceFrame();
 	}
 
 	protected float scale;
@@ -112,7 +116,7 @@ public abstract class Tracer extends MSPPerformer {
 
 	@Override
 	public void perform(MSPSignal[] in, MSPSignal[] out) {
-		post("performing! " + stallIndex + ", " + pointIndex + ", " + edgeIndex);
+//		post("performing! " + stallIndex + ", " + pointIndex + ", " + edgeIndex);
 		for (int i = 0; i < out[0].vec.length; i++) {
 			try {
 				if (stallIndex >= spp) {
@@ -138,8 +142,8 @@ public abstract class Tracer extends MSPPerformer {
 				out[2].vec[i] = (float) (blank(pointIndex));
 			} catch (Exception e) {
 				// OOB and NPE possible cos of race condition
-				post("exception:" + e.getMessage());
-				post(edgeIndex + ": " + pointIndex + ": " + stallIndex);
+				// post("exception:" + e.getMessage());
+				// post(edgeIndex + ": " + pointIndex + ": " + stallIndex);
 				resetIndexes();
 			}
 		}
