@@ -45,7 +45,7 @@ public class PlotTracer2 extends MSPPerformer {
             { -1, 0 }, { -1, 1 }, { 0, 1 }, { 1, 1 } };
 
     List<List<Coord>> readTraces = new ArrayList<List<Coord>>();
-    List<List<Coord>> writeEdges = new ArrayList<List<Coord>>();
+    List<List<Coord>> writeTraces = new ArrayList<List<Coord>>();
 
     protected PlotTracer2() {
         declareInlets(new int[] { DataTypes.ALL });
@@ -85,8 +85,8 @@ public class PlotTracer2 extends MSPPerformer {
     }
 
     private void advanceFrame() {
-        // post("advancing frame with this many edges: " + readEdges.size());
-        writeEdges = readTraces;
+        post("advancing frame with this many edges: " + readTraces.size());
+        writeTraces = readTraces;
         resetIndexes();
         readTraces = new ArrayList<List<Coord>>();
     }
@@ -153,19 +153,19 @@ public class PlotTracer2 extends MSPPerformer {
                 } else {
                     stallIndex++;
                 }
-                if (pointIndex >= this.writeEdges.get(edgeIndex).size()) {
+                if (pointIndex >= this.writeTraces.get(edgeIndex).size()) {
                     edgeIndex++;
                     pointIndex = 0;
                     stallIndex = 0;
                 }
-                if (edgeIndex >= this.writeEdges.size()) {
+                if (edgeIndex >= this.writeTraces.size()) {
                     edgeIndex = 0;
                     pointIndex = 0;
                     stallIndex = 0;
                 }
-                out[0].vec[i] = (float) (this.writeEdges.get(edgeIndex).get(pointIndex).x
+                out[0].vec[i] = (float) (this.writeTraces.get(edgeIndex).get(pointIndex).x
                         * (2.0 / scale) - 1.0);
-                out[1].vec[i] = (float) (this.writeEdges.get(edgeIndex).get(pointIndex).y
+                out[1].vec[i] = (float) (this.writeTraces.get(edgeIndex).get(pointIndex).y
                         * (2.0 / scale) - 1.0);
                 out[2].vec[i] = (blank(pointIndex));
             } catch (Exception e) {
