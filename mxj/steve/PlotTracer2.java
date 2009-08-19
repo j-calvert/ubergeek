@@ -76,7 +76,7 @@ public class PlotTracer2 extends MSPPerformer {
             jm.frommatrix(s);
             int dim[] = jm.getDim();
             int[] data = new int[dim[0]];
-            post("received dimension " + data.length + " data");
+//            post("received dimension " + data.length + " data");
             jm.copyMatrixToArray(data);
             ready = false;
             getTraces(data);
@@ -86,7 +86,7 @@ public class PlotTracer2 extends MSPPerformer {
     }
 
     private void advanceFrame() {
-        post("advancing frame with this many edges: " + readTraces.size());
+//        post("advancing frame with this many edges: " + readTraces.size());
         writeTraces = readTraces;
         resetIndexes();
         readTraces = new ArrayList<List<Coord>>();
