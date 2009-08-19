@@ -17,13 +17,14 @@ public class PlotTracer2 extends MSPPerformer {
 			if(data[i * 3] == 0) {
 				if(trace.size() > 0) {
 					readTraces.add(trace);
+				} else {
+					trace = new ArrayList<Coord>();
 				}
-				trace = new ArrayList<Coord>();
 			} else {
 				if(trace.size() > 0) {
 					pixelByPixel(trace, new Coord(data[i * 3 + 1], data[i * 3 + 2]));
 				} else {
-					new Coord(data[i * 3 + 1], data[i * 3 + 2]);
+					trace.add(new Coord(data[i * 3 + 1], data[i * 3 + 2]));
 				}
 			}
 		}
