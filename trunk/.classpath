@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="src" path="mxj"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="maxLib/jitter.jar"/>
-	<classpathentry kind="lib" path="maxLib/jode-1.1.2-pre-embedded.jar"/>
-	<classpathentry kind="lib" path="maxLib/max.jar"/>
-	<classpathentry kind="output" path="mxj"/>
+	<classpathentry kind="output" path="bin"/>
 </classpath>
