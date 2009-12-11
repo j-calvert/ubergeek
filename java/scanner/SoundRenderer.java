@@ -6,6 +6,7 @@ import java.awt.font.GlyphVector;
 import java.awt.geom.PathIterator;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import javax.sound.sampled.AudioFormat;
@@ -13,7 +14,7 @@ import javax.sound.sampled.AudioSystem;
 import javax.sound.sampled.LineUnavailableException;
 import javax.sound.sampled.SourceDataLine;
 
-public class PathBuffer extends Thread {
+public class SoundRenderer extends Thread implements Renderer {
 
 	private static class ScannerPoint {
 		private static final int MOVE = PathIterator.SEG_MOVETO;
@@ -58,7 +59,7 @@ public class PathBuffer extends Thread {
 	private List<ScannerPoint> scannerPoints = new ArrayList<ScannerPoint>();
 	private boolean run = true;
 
-	public PathBuffer() throws IOException {
+	public SoundRenderer() throws IOException {
 		try {
 			sdl = AudioSystem.getSourceDataLine(af);
 			sdl.open(af);
@@ -70,12 +71,13 @@ public class PathBuffer extends Thread {
 	public static void main(String[] args) throws IOException {
 		Font font = new Font("Arial", Font.PLAIN, 12);
 		FontRenderContext frc = new FontRenderContext(null, true, true);
-		PathBuffer tgt = new PathBuffer();
+		SoundRenderer tgt = new SoundRenderer();
 		tgt.start();
 
-		GlyphVector gv = font.createGlyphVector(frc, "Hello World!");
-		Shape glyph = gv.getOutline(0, 0);
-		tgt.generatePathTone(glyph);
+		GlyphVector gv = font.createGlyphVector(frc, "Steve");
+		List<Shape> frames = new ArrayList<Shape>();
+		frames.add(gv.getOutline(10, 10));
+		tgt.nextFrame(frames);
 
 		// BufferedReader in = new BufferedReader(new
 		// InputStreamReader(System.in));
@@ -87,7 +89,8 @@ public class PathBuffer extends Thread {
 		// }
 	}
 
-	public void generatePathTone(Shape path) {
+	public void nextFrame(Collection<Shape> paths) {
+		for(Shape path : paths) {
 		PathIterator pi = path.getPathIterator(null);
 		float[] seg = new float[6];
 		float x = 0, y = 0, mx = 0, my = 0;
@@ -122,6 +125,7 @@ public class PathBuffer extends Thread {
 			pi.next();
 		}
 		scannerPoints = points;
+		}
 	}
 
 	private static final AudioFormat af = new AudioFormat(48000, 16, 6, true,
@@ -136,7 +140,7 @@ public class PathBuffer extends Thread {
 	@Override
 	public void run() {
 
-		int m = 3;
+		int m = 30;
 		byte[] buf = new byte[12];
 
 		sdl.start();
