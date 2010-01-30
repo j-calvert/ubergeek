@@ -24,8 +24,8 @@ public class CLI  extends Frame implements Runnable {
 	private Renderer renderer;
 
 	private String[] lines = new String[B_SIZE];
-	Font font = new Font("Arial", Font.PLAIN, PNTS);
-	FontRenderContext frc = new FontRenderContext(null, true, true);
+	Font font = new Font("Helvetica", Font.CENTER_BASELINE, PNTS);
+	FontRenderContext frc = new FontRenderContext(null, false, true);
 
 	
 	public static void main(String[] args) {
