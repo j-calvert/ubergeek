@@ -37,18 +37,18 @@ public class PovGen {
 				}
 				s = s + 360 * sv / 30;
 				r = r + 360 * rv / 30;
-				planetaryShot(frame + 50 * scene, r, s);
+				planetaryShot(frame + 50 * scene, r, s, rv, sv);
 			}
 		}
 		
 	}
 
-	public static void planetaryShot(int i, double r, double s) throws IOException {
+	public static void planetaryShot(int i, double r, double s, double rv, double sv) throws IOException {
 		String out = "out.pov";
 		new File(out).delete();
-		int cX = 60;
-		int cY = 100;
-		int cZ = -100;
+		int cX = 88;
+		int cY = 0;
+		int cZ = -140;
 		int kX = 0;
 		int kY = 0;
 		int kZ = 0;
@@ -57,7 +57,6 @@ public class PovGen {
 		pipeFile("declare.pov", out);
 		pipeFile("gearMacros.pov", out);
 		echoPipe(planetary(r, s), out);
-//		pipeFile("gearAssembly.pov", out);
 		wrapPipeFile("sunCW.pov", out, "union {", "	cylinder { <1,0,0>,<-30,0,0>,1.5 } \n" + 
 				"	texture { ac3d_col_6 }\n" +
 				" rotate<" + s + ",0,0>\n" +
@@ -68,10 +67,17 @@ public class PovGen {
 				" rotate <" + ((3 * r + s) / 4) + ",0,0>\n" +
 				"	translate<-30,0,0>\n" + 
 				"}\n" );
-//		pipeFile("sky2.pov", out);
+		double scale = 15;
+		echoPipe("union {	cylinder { <44,0,0>,<44," + rv * scale  + ",0>,2 } \n" + 
+		"	texture { ac3d_col_3 }}\n", out);
+		echoPipe("union {	cylinder { <48,0,0>,<48," +  (3 * rv + sv) / 4 * scale + ",0>,2} \n" + 
+				"	texture { ac3d_col_9 }}\n", out);
+		echoPipe("union {	cylinder { <52,0,0>,<52," + sv * scale + ",0>,2} \n" + 
+				"	texture { ac3d_col_6 }}\n", out);
+		echoPipe("union {	cylinder { <60,0,0><60," + s + ",0>,2} \n" + 
+				"	texture { ac3d_col_10 }}\n", out);
 		echoPipe("background{color rgb <0.52734375,  0.8046875, 0.9765625>}", out);
 		echoPipe(printLight(cX - 10, cY + 40, cZ + 10), out);
-//		exec("povray +UV +UL +A0.2 +FN16 -W320 -H240 out.pov +Oframe" + formatter.format(i) + ".png");
 		exec("povray +UV +UL +A0.2 +FN16 -W640 -H480 out.pov +Oframe" + formatter.format(i) + ".png");
 
 	}
