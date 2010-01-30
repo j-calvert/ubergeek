@@ -14,20 +14,39 @@ public class PovGen {
 	public float[][] offsets = new float[][] { new float[] { 100, 100, 100 } };
 	public float[][] features = new float[][] { new float[] { 0, 375, 225 },
 			new float[] { 0, 250, -50 } };
+	
+	public static double[] sunVelocities = new double[] {0, 2, 2.5, 0, -2, -2.5, 0};
 
 	public static void main(String[] args) throws Exception {
-		for(int i = 0; i < 20; i++) {
-			planetaryShot(i, 20 * i, 10 * i);
+		planetaryMovie();
+//		exec("mogrify -format jpg -quality 90 *.png");
+//		new File("video.mpg").delete();
+//		exec("ffmpeg -f image2 -i out%04d.jpg video.mpg");
+	}
+	
+	public static void planetaryMovie() throws IOException {
+		double s = 0, r = 0;
+		double rv = 2;
+		for(int scene = 0; scene < sunVelocities.length - 1; scene++) {
+			for(int frame = 0; frame < 50; frame++) {
+				double sv = (sunVelocities[scene] * (50 - frame) + sunVelocities[scene + 1] * frame) / 50;
+				if(sv > rv) {
+					rv = sv;
+				} else if(sv < 0 && rv > 2) {
+					rv = rv - .5/100;
+				}
+				s = s + 360 * sv / 30;
+				r = r + 360 * rv / 30;
+				planetaryShot(frame + 50 * scene, r, s);
+			}
 		}
-		exec("cd wrk; mogrify -format jpg -quality 90 *.png");
-		new File("wrk/video.mpg").delete();
-		exec("cd wrk; ffmpeg -f image2 -i out%d.jpg video.mpg");
+		
 	}
 
 	public static void planetaryShot(int i, double r, double s) throws IOException {
-		String out = "wrk/out.pov";
+		String out = "out.pov";
 		new File(out).delete();
-		int cX = 70;
+		int cX = 60;
 		int cY = 100;
 		int cZ = -100;
 		int kX = 0;
@@ -39,13 +58,21 @@ public class PovGen {
 		pipeFile("gearMacros.pov", out);
 		echoPipe(planetary(r, s), out);
 //		pipeFile("gearAssembly.pov", out);
-		pipeFile("sunCW.pov", out);
-		pipeFile("outerCW.pov", out);
-		pipeFile("planetCW.pov", out);
+		wrapPipeFile("sunCW.pov", out, "union {", "	cylinder { <1,0,0>,<-30,0,0>,1.5 } \n" + 
+				"	texture { ac3d_col_6 }\n" +
+				" rotate<" + s + ",0,0>\n" +
+				"	translate<30,0,0>}");
+		wrapPipeFile("outerCW.pov", out, "union {", "texture { ac3d_col_3 }\n" + 
+								" rotate<" + r + ",0,0>}\n");
+		wrapPipeFile("planetCW.pov", out, "union {", "    texture { ac3d_col_9 }\n" +
+				" rotate <" + ((3 * r + s) / 4) + ",0,0>\n" +
+				"	translate<-30,0,0>\n" + 
+				"}\n" );
 //		pipeFile("sky2.pov", out);
 		echoPipe("background{color rgb <0.52734375,  0.8046875, 0.9765625>}", out);
 		echoPipe(printLight(cX - 10, cY + 40, cZ + 10), out);
-		exec("povray +UV +UL +A0.2 +FN16 -W640 -H480 wrk/out.pov +Owrk/frame" + formatter.format(i) + ".png");
+//		exec("povray +UV +UL +A0.2 +FN16 -W320 -H240 out.pov +Oframe" + formatter.format(i) + ".png");
+		exec("povray +UV +UL +A0.2 +FN16 -W640 -H480 out.pov +Oframe" + formatter.format(i) + ".png");
 
 	}
 
@@ -76,6 +103,21 @@ public class PovGen {
 
 	}
 
+	private static void wrapPipeFile(String f1, String f2, String head, String tail) throws IOException {
+		
+		BufferedReader in = new BufferedReader(new FileReader("pov/" + f1));
+		BufferedWriter out = new BufferedWriter(new FileWriter(f2, true));
+		out.write(head + "\n");
+		String s;
+		while ((s = in.readLine()) != null) {
+			out.write(s + "\n");
+		}
+		out.write(tail + "\n");
+		in.close();
+		out.close();
+		
+	}
+	
 	private static void pipeFile(String f1, String f2) throws IOException {
 		BufferedReader in = new BufferedReader(new FileReader("pov/" + f1));
 		BufferedWriter out = new BufferedWriter(new FileWriter(f2, true));
@@ -121,11 +163,11 @@ public class PovGen {
 
 	public static String planetary(double r, double s) {
 
-		double a = (3 * r - s) / 4;
-		double p = 30 * (s - a) / 20;
+		double a = (3 * r + s) / 4;
+		double p = a - s;
 		
 		return "union {\n" + 
-				"	object{ GearInv ( 80, 0.15, 0.5) \n" + 
+				"	object{ GearInv ( 60, 0.15, 0.5) \n" + 
 				"	        texture { ac3d_col_3 }\n" + 
 				"	        rotate<0," + r + ",0>\n" + 
 				"	}\n" + 
@@ -137,42 +179,42 @@ public class PovGen {
 				"	\n" + 
 				"	union{\n" + 
 				"		union{\n" + 
-				"		object{ Gear (30, 0.15, 0.45) }\n" + 
+				"		object{ Gear (20, 0.15, 0.5) }\n" + 
 				"			cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n" + 
 				"				    texture { ac3d_col_9 }\n" + 
 				"		    texture { ac3d_col_9 }\n" + 
-				"		    rotate<0," + p + ",0>\n" + 
-				"		    translate<Gear_Radius(20,0.15)+Gear_Radius(30,0.15),0,0.025>\n" + 
+				"		    rotate<0," + (p + 180 / 20) + ",0>\n" + 
+				"		    translate<2*Gear_Radius(20,0.15),0,0>\n" + 
 				"		}\n" + 
 				"		union{\n" + 
-				"		object{ Gear (30, 0.15, 0.45) \n" + 
+				"		object{ Gear (20, 0.15, 0.5) \n" + 
 				"		}\n" + 
 				"		cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n" + 
 				"				    texture { ac3d_col_9 }\n" + 
 				"		    texture { ac3d_col_9 }\n" + 
-				"		    rotate<0," + p + ",0>\n" + 
-				"		    translate<-Gear_Radius(20,0.15)-Gear_Radius(30,0.15),0,0.025>\n" + 
+				"		    rotate<0," + (p + 180 / 20) + ",0>\n" + 
+				"		    translate<-2*Gear_Radius(20,0.15),0,0>\n" + 
 				"		}\n" + 
 				"		union{\n" + 
-				"		object{ Gear (30, 0.15, 0.45) \n" + 
+				"		object{ Gear (20, 0.15, 0.5) \n" + 
 				"		}\n" + 
 				"		cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n" + 
 				"				    texture { ac3d_col_9 }\n" + 
 				"		    texture { ac3d_col_9 }\n" + 
-				"		    rotate<0," + p + ",0>\n" + 
-				"		    translate<0,0,Gear_Radius(20,0.15)+Gear_Radius(30,0.15)>\n" + 
+				"		    rotate<0," + (p + 180 / 20) + ",0>\n" + 
+				"		    translate<0,0,2*Gear_Radius(20,0.15)>\n" + 
 				"		}\n" + 
 				"		union{\n" + 
-				"		object{ Gear (30, 0.15, 0.45) \n" + 
+				"		object{ Gear (20, 0.15, 0.5) \n" + 
 				"		}\n" + 
 				"		cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n" + 
 				"				    texture { ac3d_col_9 }\n" + 
-				"		    rotate<0," + p + ",0>\n" + 
-				"		    translate<0,0,-Gear_Radius(20,0.15)-Gear_Radius(30,0.15)>\n" + 
+				"		    rotate<0," + (p + 180 / 20) + ",0>\n" + 
+				"		    translate<0,0,-2*Gear_Radius(20,0.15)>\n" + 
 				"		}\n" + 
 				"	    rotate<0," + a + ",0>\n" + 
 				"	}\n" + 
-				"	scale <16,16,16>\n" + 
+				"	scale <21, 21, 21>\n" + 
 				"	rotate<90,90,0>\n" + 
 				"}";
 	}
@@ -187,14 +229,11 @@ public class PovGen {
 					p.getInputStream()));
 			BufferedReader stdError = new BufferedReader(new InputStreamReader(
 					p.getErrorStream()));
-			System.out.println("Here is the standard output of the command:\n");
 			while ((s = stdInput.readLine()) != null) {
 				System.out.println(s);
 			}
-			System.out
-					.println("Here is the standard error of the command (if any):\n");
 			while ((s = stdError.readLine()) != null) {
-				System.out.println(s);
+				System.err.println(s);
 			}
 		} catch (IOException e) {
 			System.out.println("exception happened - here's what I know: ");
