@@ -10,40 +10,46 @@ import java.text.NumberFormat;
 
 public class PovGen {
 
-	private static NumberFormat formatter = new DecimalFormat("0000"); 
-	public float[][] offsets = new float[][] { new float[] { 100, 100, 100 } };
-	public float[][] features = new float[][] { new float[] { 0, 375, 225 },
-			new float[] { 0, 250, -50 } };
-	
-	public static double[] sunVelocities = new double[] {0, 2, 2.5, 0, -2, -2.5, 0};
+	private static NumberFormat formatter = new DecimalFormat("0000");
+
+	// public float[][] offsets = new float[][] { new float[] { 100, 100, 100 }
+	// };
+	// public float[][] features = new float[][] { new float[] { 0, 375, 225 },
+	// new float[] { 0, 250, -50 } };
+
+	// public static double[] sunVelocities = new double[] {0, 2, 2.5, 0, -2,
+	// -2.5, 0};
 
 	public static void main(String[] args) throws Exception {
 		planetaryMovie();
-//		exec("mogrify -format jpg -quality 90 *.png");
-//		new File("video.mpg").delete();
-//		exec("ffmpeg -f image2 -i out%04d.jpg video.mpg");
-	}
-	
-	public static void planetaryMovie() throws IOException {
-		double s = 0, r = 0;
-		double rv = 2;
-		for(int scene = 0; scene < sunVelocities.length - 1; scene++) {
-			for(int frame = 0; frame < 50; frame++) {
-				double sv = (sunVelocities[scene] * (50 - frame) + sunVelocities[scene + 1] * frame) / 50;
-				if(sv > rv) {
-					rv = sv;
-				} else if(sv < 0 && rv > 2) {
-					rv = rv - .5/100;
-				}
-				s = s + 360 * sv / 30;
-				r = r + 360 * rv / 30;
-				planetaryShot(frame + 50 * scene, r, s, rv, sv);
-			}
-		}
-		
+		// exec("mogrify -format jpg -quality 90 *.png");
+		// new File("video.mpg").delete();
+		// exec("ffmpeg -f image2 -i out%04d.jpg video.mpg");
 	}
 
-	public static void planetaryShot(int i, double r, double s, double rv, double sv) throws IOException {
+	public static void planetaryMovie() throws IOException {
+		double maxv = 1;
+		double s = 0, r = 0;
+		double rv = 1.5;
+		int NUM_FRAMES = 600;
+		int start = 0;
+		int FRAME_RATE = 50;
+
+		for (int frame = start; frame < NUM_FRAMES; frame++) {
+			double sv = 1.5 * Math.sin(Math.PI / 2 / FRAME_RATE * frame);
+			if (sv >= rv) {
+				rv = sv;
+			} else if (sv < 0 && rv > maxv * .6) {
+				rv = rv - .5 / 10000;
+			}
+			s = s + 360 * sv / 60;
+			r = r + 360 * rv / 60;
+			planetaryShot(frame, r, s, rv, sv);
+		}
+	}
+
+	public static void planetaryShot(int i, double r, double s, double rv,
+			double sv) throws IOException {
 		String out = "out.pov";
 		new File(out).delete();
 		int cX = 88;
@@ -57,29 +63,42 @@ public class PovGen {
 		pipeFile("declare.pov", out);
 		pipeFile("gearMacros.pov", out);
 		echoPipe(planetary(r, s), out);
-		wrapPipeFile("sunCW.pov", out, "union {", "	cylinder { <1,0,0>,<-30,0,0>,1.5 } \n" + 
-				"	texture { ac3d_col_6 }\n" +
-				" rotate<" + s + ",0,0>\n" +
-				"	translate<30,0,0>}");
-		wrapPipeFile("outerCW.pov", out, "union {", "texture { ac3d_col_3 }\n" + 
-								" rotate<" + r + ",0,0>}\n");
-		wrapPipeFile("planetCW.pov", out, "union {", "    texture { ac3d_col_9 }\n" +
-				" rotate <" + ((3 * r + s) / 4) + ",0,0>\n" +
-				"	translate<-30,0,0>\n" + 
-				"}\n" );
+		wrapPipeFile("sunCW.pov", out, "union {",
+				"	cylinder { <1,0,0>,<-30,0,0>,1.5 } \n"
+						+ "	texture { ac3d_col_6 }\n" + " rotate<" + s
+						+ ",0,0>\n" + "	translate<30,0,0>}");
+		wrapPipeFile("outerCW.pov", out, "union {", "texture { ac3d_col_3 }\n"
+				+ " rotate<" + r + ",0,0>}\n");
+		wrapPipeFile("planetCW.pov", out, "union {",
+				"    texture { ac3d_col_9 }\n" + " rotate <"
+						+ ((3 * r + s) / 4) + ",0,0>\n"
+						+ "	translate<-30,0,0>\n" + "}\n");
 		double scale = 15;
-		echoPipe("union {	cylinder { <44,0,0>,<44," + rv * scale  + ",0>,2 } \n" + 
-		"	texture { ac3d_col_3 }}\n", out);
-		echoPipe("union {	cylinder { <48,0,0>,<48," +  (3 * rv + sv) / 4 * scale + ",0>,2} \n" + 
-				"	texture { ac3d_col_9 }}\n", out);
-		echoPipe("union {	cylinder { <52,0,0>,<52," + sv * scale + ",0>,2} \n" + 
-				"	texture { ac3d_col_6 }}\n", out);
-		echoPipe("union {	cylinder { <60,0,0><60," + s + ",0>,2} \n" + 
-				"	texture { ac3d_col_10 }}\n", out);
-		echoPipe("background{color rgb <0.52734375,  0.8046875, 0.9765625>}", out);
+		echoPipe("union {	cylinder { <44,0,0>,<44," + ndg(rv * scale)
+				+ ",0>,2 } \n" + "	texture { ac3d_col_3 }}\n", out);
+		echoPipe("union {	cylinder { <48,0,0>,<48,"
+				+ ndg((3 * rv + sv) / 4 * scale) + ",0>,2} \n"
+				+ "	texture { ac3d_col_9 }}\n", out);
+		echoPipe("union {	cylinder { <52,0,0>,<52," + ndg(sv * scale)
+				+ ",0>,2} \n" + "	texture { ac3d_col_6 }}\n", out);
+		echoPipe("union {	cylinder { <60,0,0><60," + ndg(s / 500 * scale)
+				+ ",0>,2} \n" + "	texture { ac3d_col_10 }}\n", out);
+		echoPipe("background{color rgb <0.52734375,  0.8046875, 0.9765625>}",
+				out);
 		echoPipe(printLight(cX - 10, cY + 40, cZ + 10), out);
-		exec("povray +UV +UL +A0.2 +FN16 -W640 -H480 out.pov +Oframe" + formatter.format(i) + ".png");
+		exec("povray +UV +UL +A0.2 +FN16 -W640 -H480 Display=false out.pov +Oframe"
+				+ formatter.format(i) + ".png");
+		// test
+		// if (i % 50 == 0) {
+		// exec("povray +UV +UL +A0.2 +FN16 -W640 -H480 out.pov +Oframe"
+		// + formatter.format(i) + ".png");
+		// }
+		System.out.println("rv, sv, s" + rv + ", " + sv + ", " + s);
 
+	}
+
+	private static double ndg(double d) {
+		return d == 0 ? .000000001 : d;
 	}
 
 	public static void kitebotShot() throws IOException {
@@ -109,8 +128,9 @@ public class PovGen {
 
 	}
 
-	private static void wrapPipeFile(String f1, String f2, String head, String tail) throws IOException {
-		
+	private static void wrapPipeFile(String f1, String f2, String head,
+			String tail) throws IOException {
+
 		BufferedReader in = new BufferedReader(new FileReader("pov/" + f1));
 		BufferedWriter out = new BufferedWriter(new FileWriter(f2, true));
 		out.write(head + "\n");
@@ -121,9 +141,9 @@ public class PovGen {
 		out.write(tail + "\n");
 		in.close();
 		out.close();
-		
+
 	}
-	
+
 	private static void pipeFile(String f1, String f2) throws IOException {
 		BufferedReader in = new BufferedReader(new FileReader("pov/" + f1));
 		BufferedWriter out = new BufferedWriter(new FileWriter(f2, true));
@@ -171,58 +191,68 @@ public class PovGen {
 
 		double a = (3 * r + s) / 4;
 		double p = a - s;
-		
-		return "union {\n" + 
-				"	object{ GearInv ( 60, 0.15, 0.5) \n" + 
-				"	        texture { ac3d_col_3 }\n" + 
-				"	        rotate<0," + r + ",0>\n" + 
-				"	}\n" + 
-				"	\n" + 
-				"	object{ Gear ( 20, 0.15, 0.5) \n" + 
-				"	        texture { ac3d_col_6 }\n" + 
-				"	        rotate<0," + s + ",0>\n" + 
-				"	}\n" + 
-				"	\n" + 
-				"	union{\n" + 
-				"		union{\n" + 
-				"		object{ Gear (20, 0.15, 0.5) }\n" + 
-				"			cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n" + 
-				"				    texture { ac3d_col_9 }\n" + 
-				"		    texture { ac3d_col_9 }\n" + 
-				"		    rotate<0," + (p + 180 / 20) + ",0>\n" + 
-				"		    translate<2*Gear_Radius(20,0.15),0,0>\n" + 
-				"		}\n" + 
-				"		union{\n" + 
-				"		object{ Gear (20, 0.15, 0.5) \n" + 
-				"		}\n" + 
-				"		cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n" + 
-				"				    texture { ac3d_col_9 }\n" + 
-				"		    texture { ac3d_col_9 }\n" + 
-				"		    rotate<0," + (p + 180 / 20) + ",0>\n" + 
-				"		    translate<-2*Gear_Radius(20,0.15),0,0>\n" + 
-				"		}\n" + 
-				"		union{\n" + 
-				"		object{ Gear (20, 0.15, 0.5) \n" + 
-				"		}\n" + 
-				"		cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n" + 
-				"				    texture { ac3d_col_9 }\n" + 
-				"		    texture { ac3d_col_9 }\n" + 
-				"		    rotate<0," + (p + 180 / 20) + ",0>\n" + 
-				"		    translate<0,0,2*Gear_Radius(20,0.15)>\n" + 
-				"		}\n" + 
-				"		union{\n" + 
-				"		object{ Gear (20, 0.15, 0.5) \n" + 
-				"		}\n" + 
-				"		cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n" + 
-				"				    texture { ac3d_col_9 }\n" + 
-				"		    rotate<0," + (p + 180 / 20) + ",0>\n" + 
-				"		    translate<0,0,-2*Gear_Radius(20,0.15)>\n" + 
-				"		}\n" + 
-				"	    rotate<0," + a + ",0>\n" + 
-				"	}\n" + 
-				"	scale <21, 21, 21>\n" + 
-				"	rotate<90,90,0>\n" + 
-				"}";
+
+		return "union {\n" + "	object{ GearInv ( 60, 0.15, 0.5) \n"
+				+ "	        texture { ac3d_col_3 }\n" + "	        rotate<0,"
+				+ r
+				+ ",0>\n"
+				+ "	}\n"
+				+ "	\n"
+				+ "	object{ Gear ( 20, 0.15, 0.5) \n"
+				+ "	        texture { ac3d_col_6 }\n"
+				+ "	        rotate<0,"
+				+ s
+				+ ",0>\n"
+				+ "	}\n"
+				+ "	\n"
+				+ "	union{\n"
+				+ "		union{\n"
+				+ "		object{ Gear (20, 0.15, 0.5) }\n"
+				+ "			cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n"
+				+ "				    texture { ac3d_col_9 }\n"
+				+ "		    texture { ac3d_col_9 }\n"
+				+ "		    rotate<0,"
+				+ (p + 180 / 20)
+				+ ",0>\n"
+				+ "		    translate<2*Gear_Radius(20,0.15),0,0>\n"
+				+ "		}\n"
+				+ "		union{\n"
+				+ "		object{ Gear (20, 0.15, 0.5) \n"
+				+ "		}\n"
+				+ "		cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n"
+				+ "				    texture { ac3d_col_9 }\n"
+				+ "		    texture { ac3d_col_9 }\n"
+				+ "		    rotate<0,"
+				+ (p + 180 / 20)
+				+ ",0>\n"
+				+ "		    translate<-2*Gear_Radius(20,0.15),0,0>\n"
+				+ "		}\n"
+				+ "		union{\n"
+				+ "		object{ Gear (20, 0.15, 0.5) \n"
+				+ "		}\n"
+				+ "		cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n"
+				+ "				    texture { ac3d_col_9 }\n"
+				+ "		    texture { ac3d_col_9 }\n"
+				+ "		    rotate<0,"
+				+ (p + 180 / 20)
+				+ ",0>\n"
+				+ "		    translate<0,0,2*Gear_Radius(20,0.15)>\n"
+				+ "		}\n"
+				+ "		union{\n"
+				+ "		object{ Gear (20, 0.15, 0.5) \n"
+				+ "		}\n"
+				+ "		cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n"
+				+ "				    texture { ac3d_col_9 }\n"
+				+ "		    rotate<0,"
+				+ (p + 180 / 20)
+				+ ",0>\n"
+				+ "		    translate<0,0,-2*Gear_Radius(20,0.15)>\n"
+				+ "		}\n"
+				+ "	    rotate<0,"
+				+ a
+				+ ",0>\n"
+				+ "	}\n"
+				+ "	scale <21, 21, 21>\n" + "	rotate<90,90,0>\n" + "}";
 	}
 
 	public static void exec(String cmd) {
