@@ -11,128 +11,151 @@ import java.text.NumberFormat;
 public class PovGen {
 
 	private static NumberFormat formatter = new DecimalFormat("0000");
+	private static String OUT = "out.pov";
+	private static final double MAX_ANGULAR_VEL = 1;
+	private static final int SUN_PERIOD = 2;
+	private static double LEGEND_SCALE = 15;
+	private int NUM_FRAMES = 9;
+	private int SECONDS_PER_FRAME = 30;
+	private Vec camLoc = new Vec(-200, 30, 145);
+	private Vec camLook = new Vec(0, 0, 0);
+	private double camAngle = 50;
+	private double s = 0, r = 0;
+	private double rv = MAX_ANGULAR_VEL, sv = 0;
+	private int frame = 0;
+	private double time = 0;
+	
+	private static class Vec {
+		double x = 0;
+		double y = 0;
+		double z = 0;
+		
+		public Vec(double x, double y, double z) {
+			this.x = x;
+			this.y = y;
+			this.z = z;
+		}
+		@Override
+		public String toString() {
+			return "< " + x + ", " + y + ", " + z + ">";
+			
+		}
+		
+	}
+	
+	private static Vec vec(double f1, double f2, double f3) {
+		return new Vec(f1, f2, f2);
+	}
 
-	// public float[][] offsets = new float[][] { new float[] { 100, 100, 100 }
-	// };
-	// public float[][] features = new float[][] { new float[] { 0, 375, 225 },
-	// new float[] { 0, 250, -50 } };
-
-	// public static double[] sunVelocities = new double[] {0, 2, 2.5, 0, -2,
-	// -2.5, 0};
 
 	public static void main(String[] args) throws Exception {
-		planetaryMovie();
+		new PovGen().movie();
+		// kitebotShot();
+		// planetaryMovie();
+
+	}
+
+	private void movie() throws IOException {
+
+		for (frame = 0; frame < NUM_FRAMES; frame++) {
+			advance();
+			shootFrame();
+		}
 		// exec("mogrify -format jpg -quality 90 *.png");
 		// new File("video.mpg").delete();
 		// exec("ffmpeg -f image2 -i out%04d.jpg video.mpg");
 	}
 
-	public static void planetaryMovie() throws IOException {
-		double maxv = 1;
-		double s = 0, r = 0;
-		double rv = 1.5;
-		int NUM_FRAMES = 600;
-		int start = 0;
-		int FRAME_RATE = 50;
-
-		for (int frame = start; frame < NUM_FRAMES; frame++) {
-			double sv = 1.5 * Math.sin(Math.PI / 2 / FRAME_RATE * frame);
-			if (sv >= rv) {
-				rv = sv;
-			} else if (sv < 0 && rv > maxv * .6) {
-				rv = rv - .5 / 10000;
-			}
-			s = s + 360 * sv / 60;
-			r = r + 360 * rv / 60;
-			planetaryShot(frame, r, s, rv, sv);
+	private void advance() {
+		time = frame / SECONDS_PER_FRAME;
+		sv = MAX_ANGULAR_VEL * Math.sin(Math.PI / 2 / SUN_PERIOD * time);
+		if (sv >= rv) {
+			rv = sv;
+		} else if (sv < 0 && rv > MAX_ANGULAR_VEL * .6) {
+			rv = rv - .5 / 10000;
 		}
+		s = s + 360 * sv / 60;
+		r = r + 360 * rv / 60;
+		// cY = 5 * frame;
+		// cZ = -100 * frame + 500;
+		camLoc.x = 1000 * Math.sin(Math.PI / 8 * frame);
+		camLoc.z = 1000 * Math.cos(Math.PI / 8 * frame);
 	}
 
-	public static void planetaryShot(int i, double r, double s, double rv,
-			double sv) throws IOException {
-		String out = "out.pov";
-		new File(out).delete();
-		int cX = 88;
-		int cY = 0;
-		int cZ = -140;
-		int kX = 0;
-		int kY = 0;
-		int kZ = 0;
-		int a = 50;
-		echoPipe(printCamera(cX, cY, cZ, kX, kY, kZ, a), out);
-		pipeFile("declare.pov", out);
-		pipeFile("gearMacros.pov", out);
-		echoPipe(planetary(r, s), out);
-		wrapPipeFile("sunCW.pov", out, "union {",
-				"	cylinder { <1,0,0>,<-30,0,0>,1.5 } \n"
-						+ "	texture { ac3d_col_6 }\n" + " rotate<" + s
-						+ ",0,0>\n" + "	translate<30,0,0>}");
-		wrapPipeFile("outerCW.pov", out, "union {", "texture { ac3d_col_3 }\n"
-				+ " rotate<" + r + ",0,0>}\n");
-		wrapPipeFile("planetCW.pov", out, "union {",
-				"    texture { ac3d_col_9 }\n" + " rotate <"
-						+ ((3 * r + s) / 4) + ",0,0>\n"
-						+ "	translate<-30,0,0>\n" + "}\n");
-		double scale = 15;
-		echoPipe("union {	cylinder { <44,0,0>,<44," + ndg(rv * scale)
-				+ ",0>,2 } \n" + "	texture { ac3d_col_3 }}\n", out);
-		echoPipe("union {	cylinder { <48,0,0>,<48,"
-				+ ndg((3 * rv + sv) / 4 * scale) + ",0>,2} \n"
-				+ "	texture { ac3d_col_9 }}\n", out);
-		echoPipe("union {	cylinder { <52,0,0>,<52," + ndg(sv * scale)
-				+ ",0>,2} \n" + "	texture { ac3d_col_6 }}\n", out);
-		echoPipe("union {	cylinder { <60,0,0><60," + ndg(s / 500 * scale)
-				+ ",0>,2} \n" + "	texture { ac3d_col_10 }}\n", out);
-		echoPipe("background{color rgb <0.52734375,  0.8046875, 0.9765625>}",
-				out);
-		echoPipe(printLight(cX - 10, cY + 40, cZ + 10), out);
-		exec("povray +UV +UL +A0.2 +FN16 -W640 -H480 Display=false out.pov +Oframe"
-				+ formatter.format(i) + ".png");
-		// test
-		// if (i % 50 == 0) {
-		// exec("povray +UV +UL +A0.2 +FN16 -W640 -H480 out.pov +Oframe"
-		// + formatter.format(i) + ".png");
-		// }
-		System.out.println("i, rv, sv, s: " + i + ", " + rv + ", " + sv + ", " + s);
+	private void shootFrame() throws IOException {
+		new File(OUT).delete();
+		// lights
+		print(light(vec(1500, 2500, 2500), vec(1,1,1)));
+		print(light(camLoc, vec(.2, .2, .2)));
+		// camera
+		print(camera());
+		// constants
+		pipe("declare.pov");
+		// action
+		kitebot();
+		planetaryGears();
+		legend();
 
+		// backdrop
+		// outdoors
+		pipe("sky2.pov");
+		// indoors
+		// echoPipe("background{color rgb <0.52734375,  0.8046875, 0.9765625>}");
+
+		exec("povray +UV +UL +A0.2 +FN16 -W640 -H480 out.pov +Oframe"
+				+ formatter.format(frame) + ".png");
+		System.out.println("i, rv, sv, s: " + frame + ", " + rv + ", " + sv
+				+ ", " + s);
 	}
 
-	private static double ndg(double d) {
+	private void cogHub() throws IOException {
+		pipe("cogHub.pov", "union {", "texture { ac3d_col_3 }\n" + " rotate<"
+				+ s + ",118.876,-493.656>}\n");
+	}
+
+	private void planetaryGears() throws IOException {
+		pipe("gearMacros.pov");
+		print(planetary());
+		pipe("sunCW.pov", "union {", "	cylinder { <1,0,0>,<-30,0,0>,1.5 } \n"
+				+ "	texture { ac3d_col_6 }\n" + " rotate<" + s + ",0,0>\n"
+				+ "	translate<30,0,0>}");
+		pipe("outerCW.pov", "union {", "texture { ac3d_col_3 }\n" + " rotate<"
+				+ r + ",0,0>}\n");
+		pipe("planetCW.pov", "union {", "    texture { ac3d_col_9 }\n"
+				+ " rotate <" + ((3 * r + s) / 4) + ",0,0>\n"
+				+ "	translate<-30,0,0>\n" + "}\n");
+	}
+
+	private void legend() throws IOException {
+		cylinder(new Vec(44,0,0),new Vec(44, ndg(rv * LEGEND_SCALE),0), 2, 3);
+		cylinder(new Vec(48,0,0),new Vec(48, ndg((3 * rv + sv) / 4 * LEGEND_SCALE),0), 2, 9);
+		cylinder(new Vec(52,0,0),new Vec(52, ndg(sv * LEGEND_SCALE),0), 2, 6);
+		cylinder(new Vec(60,0,0),new Vec(60, ndg(s / 500 * LEGEND_SCALE),0), 2, 10);
+	}
+	
+	public void cylinder(Vec base, Vec top, double width, int color) throws IOException {
+		print("union {	cylinder { " + base + "," + top + "," + width + "} \n" + "	texture { ac3d_col_" + color + " }}\n");		
+	}
+
+	private double ndg(double d) {
 		return d == 0 ? .000000001 : d;
 	}
 
-	public static void kitebotShot() throws IOException {
-		String out = "out.pov";
-		new File(out).delete();
-		int cX = -200;
-		int cY = 330;
-		int cZ = 145;
-		int kX = 0;
-		int kY = 280;
-		int kZ = 95;
-		int a = 50;
-		echoPipe(printCamera(cX, cY, cZ, kX, kY, kZ, a), out);
-		pipeFile("declare.pov", out);
-		echoPipe("union { ", out);
-		pipeFile("thing.pov", out);
-		echoPipe("} ", out);
-		pipeFile("sky2.pov", out);
-		echoPipe(printLight(1500, 2500, -2500), out);
-		echoPipe(printDimLight(cX, cY, cZ), out);
+	private void kitebot() throws IOException {
+		pipe("complete.pov", "union { ", "} ");
 	}
 
-	private static void echoPipe(String s, String f2) throws IOException {
-		BufferedWriter out = new BufferedWriter(new FileWriter(f2, true));
+	private void print(String s) throws IOException {
+		BufferedWriter out = new BufferedWriter(new FileWriter(OUT, true));
 		out.write(s + "\n");
 		out.close();
 
 	}
 
-	private static void wrapPipeFile(String f1, String f2, String head,
-			String tail) throws IOException {
+	private void pipe(String f1, String head, String tail) throws IOException {
 
 		BufferedReader in = new BufferedReader(new FileReader("pov/" + f1));
-		BufferedWriter out = new BufferedWriter(new FileWriter(f2, true));
+		BufferedWriter out = new BufferedWriter(new FileWriter(OUT, true));
 		out.write(head + "\n");
 		String s;
 		while ((s = in.readLine()) != null) {
@@ -144,9 +167,9 @@ public class PovGen {
 
 	}
 
-	private static void pipeFile(String f1, String f2) throws IOException {
+	private void pipe(String f1) throws IOException {
 		BufferedReader in = new BufferedReader(new FileReader("pov/" + f1));
-		BufferedWriter out = new BufferedWriter(new FileWriter(f2, true));
+		BufferedWriter out = new BufferedWriter(new FileWriter(OUT, true));
 
 		String s;
 		while ((s = in.readLine()) != null) {
@@ -156,41 +179,24 @@ public class PovGen {
 		out.close();
 	}
 
-	public static String printLight(double x, double y, double z) {
-		return "      light_source {" + vec(x, y, z) + "\n"
-				+ "        color rgb <1, 1, 1> }";
+	private String light(Vec loc, Vec color) {
+		return "      light_source {" + loc + "\n"
+				+ "        color rgb " +  color + " }";
 	}
 
-	public static String printDimLight(double x, double y, double z) {
-		return "      light_source {" + vec(x, y, z) + "\n"
-				+ "        color rgb <.21, .21, .21> }";
-	}
-
-	public static String printCamera(double cX, double cY, double cZ,
-			double kX, double kY, double kZ, double a) {
-		return "      camera {  location " + vec(cX, cY, cZ) + "\n"
+	private String camera() {
+		return "      camera {  location " + camLoc + "\n"
 				+ "        up < 0.000000, 1.000000, 0.000000>\n"
-				+ "        right < -1.330000, 0.000000, 0.000000>\n"
-				+ "        look_at  " + vec(kX, kY, kZ) + "\n"
-				+ "        angle " + a + " }";
+				+ "        right < 0.000, 0.000000, 1.0>\n"
+				+ "        look_at  " + camLook + "\n"
+				+ "        angle " + camAngle + " }";
 	}
 
-	public static String printRotate(double x, double y, double z) {
-		return "  rotate " + vec(x, y, z) + "\n";
-	}
 
-	public static String printScale(double x, double y, double z) {
-		return "  scale " + vec(x, y, z) + "\n";
-	}
+	private String planetary() {
 
-	public static String vec(double f1, double f2, double f3) {
-		return "< " + f1 + ", " + f2 + ", " + f3 + ">";
-	}
-
-	public static String planetary(double r, double s) {
-
-		double a = (3 * r + s) / 4;
-		double p = a - s;
+		double ann = (3 * r + s) / 4;
+		double p = ann - s;
 
 		return "union {\n" + "	object{ GearInv ( 60, 0.15, 0.5) \n"
 				+ "	        texture { ac3d_col_3 }\n" + "	        rotate<0,"
@@ -249,13 +255,13 @@ public class PovGen {
 				+ "		    translate<0,0,-2*Gear_Radius(20,0.15)>\n"
 				+ "		}\n"
 				+ "	    rotate<0,"
-				+ a
+				+ ann
 				+ ",0>\n"
 				+ "	}\n"
 				+ "	scale <21, 21, 21>\n" + "	rotate<90,90,0>\n" + "}";
 	}
 
-	public static void exec(String cmd) {
+	private void exec(String cmd) {
 
 		String s = null;
 
