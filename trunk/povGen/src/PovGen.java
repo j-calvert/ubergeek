@@ -93,7 +93,7 @@ public class PovGen {
 		// exec("povray +UV +UL +A0.2 +FN16 -W640 -H480 out.pov +Oframe"
 		// + formatter.format(i) + ".png");
 		// }
-		System.out.println("rv, sv, s" + rv + ", " + sv + ", " + s);
+		System.out.println("i, rv, sv, s: " + i + ", " + rv + ", " + sv + ", " + s);
 
 	}
 
