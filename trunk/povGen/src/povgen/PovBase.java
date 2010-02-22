@@ -91,10 +91,10 @@ public class PovBase {
 			BufferedReader stdError = new BufferedReader(new InputStreamReader(
 					p.getErrorStream()));
 			while ((s = stdInput.readLine()) != null) {
-				System.out.println(s);
+//				System.out.println(s);
 			}
 			while ((s = stdError.readLine()) != null) {
-				System.err.println(s);
+//				System.err.println(s);
 			}
 		} catch (IOException e) {
 			System.out.println("exception happened - here's what I know: ");
