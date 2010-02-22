@@ -1,4 +1,4 @@
-package povgen.material;
+package povgen;
 
 public enum Finish {
 
