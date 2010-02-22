@@ -1,14 +1,10 @@
 package povgen;
 
-import static povgen.Util.pipe;
-import static povgen.Util.print;
-
 import java.io.IOException;
 
-import povgen.Util.Vec;
-public class Planetary {
+public class Planetary extends PovBase {
 
-	public static void pov(int r, double s) throws IOException {
+	public void pov(int r, double s) throws IOException {
 
 		double ann = (3 * r + s) / 4;
 		double p = ann - s;

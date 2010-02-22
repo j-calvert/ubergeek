@@ -4,6 +4,7 @@ global_settings { max_trace_level 10 }//(1...20) [default = 5]
 #include "colors.inc"
 #include "textures.inc"
 #include "golds.inc"
+#include "pov/myfinishes.inc";
 
 #declare ac3d_col_0 = texture { pigment { color rgbf < 0.286 0.278 0.247 0>} finish { ambient 0.2 specular 0.2 roughness 0.005} }
 #declare ac3d_col_1 = texture { pigment { color rgbf < 0.412 0.435 0.416 0>} finish { ambient 0 specular 0.2 roughness 0.005} }
