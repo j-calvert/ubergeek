@@ -10,7 +10,7 @@ public class CameraMan extends PovBase {
 		new CameraMan().shootMovie();
 		new CameraMan().shootMovie2();
 	}
-	
+		
 	public void shootMovie() throws IOException {
 		Vec total = new Vec(0, 400, 0);
 		Vec spools = new Vec(0, 370, 230);
