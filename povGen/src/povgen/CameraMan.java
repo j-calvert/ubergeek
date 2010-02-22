@@ -8,6 +8,7 @@ public class CameraMan extends PovBase {
 	public static void main(String[] args) throws IOException {
 		new Ac3d();
 		new CameraMan().shootMovie();
+		new CameraMan().shootMovie2();
 	}
 	
 	public void shootMovie() throws IOException {
@@ -22,12 +23,37 @@ public class CameraMan extends PovBase {
 		circle(sa, 50, 200, 3);
 		transition(sa, mid, 50, 50, 200, 200, 2);
 		circle(mid, 50, 200, 3);
-		transition(mid, spools, 50, 50, 200, 200, 2);
-		
+		transition(mid, new Vec(0, 200, 0), new Vec(mid.x-200, mid.y + 50, mid.z), new Vec(-400, 190, 0), 2);
 	}
-		
+	
+	public void shootMovie2() throws IOException {
+		camLoc = new Vec(-400, 190, 0);
+		camLook = new Vec(0, 200, 0);
+		while(frame < 200) {
+			pivotAngle = 30 * Math.cos(2 * Math.PI * (double) frame / 100);
+			shootFramePivoting();
+			frame++;
+		}
+	}
+	
+	
+	
+
 
 	private void shootFrame() throws IOException {
+//		newFrame();
+//		print(light(vec(-2000, 2500, 500), vec(1,1,1)));
+//		print(light(camLoc, vec(.2,.2,.2)));
+//		print(camera(camLoc, camLook, camAngle));
+//		pipe("declare.pov");
+//		pipe("sky2.pov");
+//		
+//		CompSet.steeringFloating.print();
+//		snap(formatter.format(frame));
+		System.out.println(camLoc + " " + camLook);
+	}
+	
+	private void shootFramePivoting() throws IOException {
 		newFrame();
 		print(light(vec(-2000, 2500, 500), vec(1,1,1)));
 		print(light(camLoc, vec(.2,.2,.2)));
@@ -35,7 +61,10 @@ public class CameraMan extends PovBase {
 		pipe("declare.pov");
 		pipe("sky2.pov");
 		
+		print("union{");
 		CompSet.steeringFloating.print();
+		print(" rotate<0, " + pivotAngle + ",0>}");
+		CompSet.pivotBase.print();
 		snap(formatter.format(frame));
 	}
 	
@@ -55,7 +84,7 @@ public class CameraMan extends PovBase {
 	}
 	
 	private void transition(Vec f1, Vec f2, double h1, double h2, double r1, double r2, double dur) throws IOException {
-		Vec c1 = new Vec(f1.x-r1, f1.y + h1, f2.z);
+		Vec c1 = new Vec(f1.x-r1, f1.y + h1, f1.z);
 		Vec c2 = new Vec(f2.x-r2, f2.y + h1, f2.z);
 		transition(f1, f2, c1, c2, dur);
 		

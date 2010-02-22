@@ -8,11 +8,14 @@ import java.io.IOException;
 public class Ac3d extends PovBase {
 
 
-	public static void main(String[] args) throws IOException {		
+	public static void main(String[] args) throws IOException {
 		parse("render.pov");
 	}
 
 	private static void parse(String f1) throws IOException {
+		for(File f : new File("pov/parse").listFiles()) {
+			f.delete();
+		}
 		BufferedReader in = new BufferedReader(new FileReader("pov/" + f1));
 
 		String s;
@@ -23,6 +26,7 @@ public class Ac3d extends PovBase {
 			if (s.startsWith("// object ")) {
 				objectName = s.replaceFirst("// object ", "");
 				objectPov = new StringBuffer();
+				objectPov.append(s +" \n");
 			} else if (s.startsWith("texture")) {
 				// end object
 				new File("pov/parse/" + objectName).delete();

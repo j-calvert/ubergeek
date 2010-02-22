@@ -40,7 +40,7 @@ public class PovGen extends PovBase {
 //		camLoc.z = 1000 * Math.cos(Math.PI / 8 * frame);
 		camLoc.x = -700;
 		camLoc.y = 740;
-		camLoc.z = 120;
+		camLoc.z = -120;
 		camLook.x = 0;
 		camLook.y = 320;
 		camLook.z = 100;
@@ -53,7 +53,7 @@ public class PovGen extends PovBase {
 		print(camera(camLoc, camLook, camAngle));
 		pipe("declare.pov");
 		
-		CompSet.steeringFloating.print();
+		CompSet.all().print();
 //		pipe("text.pov", "union {", " translate<0,.05,0>}");
 
 		pipe("sky2.pov");

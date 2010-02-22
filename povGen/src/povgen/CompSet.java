@@ -10,6 +10,7 @@ public class CompSet extends PovBase {
 	Set<CompSet> children = new HashSet<CompSet>();
 
 	public static CompSet steeringFloating = new CompSet();
+	public static CompSet pivotBase = new CompSet();
 	static {
 		steeringFloating.comps.add(Comp.BlueSteeringChain);
 		steeringFloating.comps.add(Comp.KiteLineBlue);
@@ -31,6 +32,8 @@ public class CompSet extends PovBase {
 		steeringFloating.comps.add(Comp.SteeringSpoolsAxle);
 		steeringFloating.comps.add(Comp.SteeringWheel);
 		steeringFloating.comps.add(Comp.SteerningSAHubBlue);
+		
+		pivotBase.comps.add(Comp.AnchoredPivotBase);
 	}
 
 	public void print() throws IOException {
@@ -40,13 +43,23 @@ public class CompSet extends PovBase {
 			dedup.addAll(child.comps);
 		}
 		for (Comp c : dedup) {
-			pipe("parse/" + c.name(), "", "texture { pigment{ color rgb "
-					+ vec(nm(c.color.getRed()), nm(c.color.getBlue()),
-							nm(c.color.getGreen())) + "}" + c.finish + "}}");
+			Vec color = vec(nm(c.color.getRed()), nm(c.color.getGreen()),
+					nm(c.color.getBlue()));
+			pipe("parse/" + c.name(), "", "texture { pigment{ color rgbf "
+					+ color + "}" + c.finish + "}}");
 		}
 	}
 
 	private static double nm(int i) {
-		return ((double) i) / 255;
+		double c = ((double) i) / 255;
+		return c;
+	}
+	
+	public static CompSet all() {
+		CompSet all = new CompSet();
+		for(Comp c : Comp.values()) {
+			all.comps.add(c);
+		}
+		return all;
 	}
 }
