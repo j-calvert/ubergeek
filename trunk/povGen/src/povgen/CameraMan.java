@@ -6,7 +6,7 @@ import java.io.IOException;
 public class CameraMan extends PovBase {
 
 	public static void main(String[] args) throws IOException {
-		new Ac3d();
+		Ac3d.parse("render.pov");
 		new CameraMan().shootMovie();
 		new CameraMan().shootMovie2();
 	}
