@@ -116,8 +116,12 @@ public class PovBase {
 		@Override
 		public String toString() {
 			return "< " + x + ", " + y + ", " + z + ">";
-			
 		}
+		
+		public Vec minus(Vec that) {
+			return vec(this.x - that.x, this.y - that.y, this.z - that.z);			
+		}
+		
 		public Vec ave(Vec that, double d) {
 			return vec(this.x * (1 - d) + that.x * d, this.y * (1 - d) + that.y * d, this.z * (1 - d) + that.z * d);
 		}
