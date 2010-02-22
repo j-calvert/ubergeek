@@ -2,7 +2,6 @@ package povgen;
 
 import java.awt.Color;
 
-import povgen.material.Finish;
 
 public enum Comp {
 	AnchoredFrame("ABABAB", Finish.Polished),
