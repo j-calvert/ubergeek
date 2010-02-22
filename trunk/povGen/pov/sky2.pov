@@ -29,15 +29,15 @@ sky_sphere{
     } // end of pigment
     , 2.2) //, New_Gamma
 } // end of sky_sphere --------------------
-plane{<0,1,0>, 0
-      texture{Polished_Chrome
-              pigment{ color rgb<1,0.8,0>}
-              normal { crackle 0.15 turbulence 0.15 scale 0.25}
-              finish { diffuse 0.0}}
-     }
-//plane { <0,1,0>, 0
- //       texture{ pigment{color rgb<0.35,0.65,0.0>*0.9}
- //                normal {bumps 0.75 scale 0.015}
- //                finish {ambient 0.1 diffuse 0.8}
- //              } // end of texture
- //     } // end of plane
+//plane{<0,1,0>, 0
+//     texture{Polished_Chrome
+//              pigment{ color rgb<1,0.8,0>}
+//              normal { crackle 0.15 turbulence 0.15 scale 0.25}
+//              finish { diffuse 0.0}}
+//     }
+plane { <0,1,0>, 0
+       texture{ pigment{color rgb<0.35,0.65,0.0>*0.9}
+                normal {bumps 0.75 scale 0.015}
+                finish {ambient 0.1 diffuse 0.8}
+              } // end of texture
+     } // end of plane
