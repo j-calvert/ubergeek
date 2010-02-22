@@ -21,6 +21,8 @@ public class PovBase {
 	protected Vec camLoc = new Vec(1.7, .5, 3.3);
 	protected Vec camLook = new Vec(1.7, .4, 0);
 	protected double camAngle = 80;
+	protected double pivotAngle = 0;
+	
 	protected double s = 0, r = 0;
 	protected double rv = MAX_ANGULAR_VEL, sv = 0;
 	protected int frame = 0;
@@ -117,13 +119,13 @@ public class PovBase {
 			
 		}
 		public Vec ave(Vec that, double d) {
-			return vec(this.x * d + that.x * (1 - d), this.y * d + that.y * (1 - d), this.z * d + that.z * (1 - d));
+			return vec(this.x * (1 - d) + that.x * d, this.y * (1 - d) + that.y * d, this.z * (1 - d) + that.z * d);
 		}
 		
 	}
 	
 	protected static Vec vec(double f1, double f2, double f3) {
-		return new Vec(f1, f2, f2);
+		return new Vec(f1, f2, f3);
 	}
 
 	protected String light(Vec loc, Vec color) {
