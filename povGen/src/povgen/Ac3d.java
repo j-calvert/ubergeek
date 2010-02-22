@@ -12,7 +12,7 @@ public class Ac3d extends PovBase {
 		parse("render.pov");
 	}
 
-	private static void parse(String f1) throws IOException {
+	public static void parse(String f1) throws IOException {
 		for(File f : new File("pov/parse").listFiles()) {
 			f.delete();
 		}
