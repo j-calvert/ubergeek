@@ -5,3 +5,5 @@ global_settings { max_trace_level 10 }//(1...20) [default = 5]
 #include "textures.inc"
 #include "golds.inc"
 #include "pov/myfinishes.inc";
+
+

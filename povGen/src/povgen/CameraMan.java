@@ -47,10 +47,11 @@ public class CameraMan extends PovBase {
 		print(light(camLoc, vec(.2,.2,.2)));
 		print(camera(camLoc, camLook, camAngle));
 		pipe("declare.pov");
-		pipe("sky2.pov");
+		print("Grass_Field");
+		print("Sky_With_Coulds");
 		
 		CompSet.steeringFloating.print();
-		snap(formatter.format(frame));
+		snap(formatter.format("cameraMan" + frame));
 		System.out.println(camLoc + " " + camLook);
 	}
 	
@@ -60,13 +61,14 @@ public class CameraMan extends PovBase {
 		print(light(camLoc, vec(.2,.2,.2)));
 		print(camera(camLoc, camLook, camAngle));
 		pipe("declare.pov");
-		pipe("sky2.pov");
+		print("Grass_Field");
+		print("Sky_With_Coulds");
 		
 		print("union{");
 		CompSet.steeringFloating.print();
 		print(" rotate<0, " + pivotAngle + ",0>}");
 		CompSet.pivotBase.print();
-		snap(formatter.format(frame));
+		snap(formatter.format("cameraMan" + frame));
 	}
 	
 	private void circle(Vec focus, double height, double radius, double dur) throws IOException {
