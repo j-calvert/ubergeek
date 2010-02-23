@@ -44,7 +44,7 @@ public class PovBase {
 		print(s, OUT);
 	}
 
-	protected void pipe(String f1, String head, String tail) throws IOException {
+	public static void pipe(String f1, String head, String tail) throws IOException {
 
 		BufferedReader in = new BufferedReader(new FileReader("pov/" + f1));
 		BufferedWriter out = new BufferedWriter(new FileWriter(OUT, true));
@@ -76,14 +76,12 @@ public class PovBase {
 	}
 
 	protected void snap(String name) {
-		exec("povray +UV +UL +A0.2 +FN16 -W640 -H480 out.pov +Oframe"
+		exec("povray +UV +UL +A0.2 +FN16 -W640 -H480 out.pov +O"
 			+ name + ".png");
 	}
 	
 	protected void exec(String cmd) {
-
 		String s = null;
-
 		try {
 			Process p = Runtime.getRuntime().exec(cmd);
 			BufferedReader stdInput = new BufferedReader(new InputStreamReader(
@@ -94,7 +92,7 @@ public class PovBase {
 //				System.out.println(s);
 			}
 			while ((s = stdError.readLine()) != null) {
-//				System.err.println(s);
+				System.err.println(s);
 			}
 		} catch (IOException e) {
 			System.out.println("exception happened - here's what I know: ");
@@ -128,7 +126,7 @@ public class PovBase {
 		
 	}
 	
-	protected static Vec vec(double f1, double f2, double f3) {
+	public static Vec vec(double f1, double f2, double f3) {
 		return new Vec(f1, f2, f3);
 	}
 

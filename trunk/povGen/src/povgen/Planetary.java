@@ -4,29 +4,89 @@ import java.io.IOException;
 
 public class Planetary extends PovBase {
 
-	public void pov(int r, double s) throws IOException {
+
+
+	public static void main(String[] args) throws Exception {
+		new Planetary().movie();
+
+	}
+
+	private void movie() throws IOException {
+		NUM_FRAMES = 1;
+		camLoc = vec(-45, 120, -620);
+		camLook = vec(0, 110, -700);
+		for (frame = 0; frame < NUM_FRAMES; frame++) {
+			advance();
+			shootFrame();
+		}
+		// exec("mogrify -format jpg -quality 90 *.png");
+		// new File("video.mpg").delete();
+		// exec("ffmpeg -f image2 -i out%04d.jpg video.mpg");
+	}
+
+	private void advance() {
+		time = frame / FRAMES_PER_SECOND;
+		sv = MAX_ANGULAR_VEL * Math.sin(Math.PI / 2 / SUN_PERIOD * time);
+		if (3 * sv >= rv) {
+			rv = 3 * sv;
+		} else if (sv < 0 && rv > MAX_ANGULAR_VEL * .6) {
+			rv = rv - .5 / 10000;
+		}
+		s = s + 360 * sv / 60;
+		r = r + 360 * rv / 60;
+		// cY = 5 * frame;
+		// cZ = -100 * frame + 500;
+//		camLoc.x = 1000 * Math.sin(Math.PI / 8 * frame);
+//		camLoc.z = 1000 * Math.cos(Math.PI / 8 * frame);
+	}
+
+	private void shootFrame() throws IOException {
+		newFrame();
+		print(light(vec(-2000, 2500, 500), vec(1,1,1)));
+		print(light(camLoc, vec(.2,.2,.2)));
+		print(camera(camLoc, camLook, camAngle));
+		pipe("declare.pov");
+		pipe("sceneIndoors.pov");
+
+		print("union {");
+		pov();
+		legend(15);
+		print(" rotate <0, 180, 0> translate <0, 111.52, -697.795>}");
+		
+//		Comp.DRSAAxle.print();
+//		Comp.DRSACasing.print();
+//		Comp.DRSAPlanetNub.print();
+//		Comp.RecoilSAChainwheel.print();
+		
+		snap("planetary" + formatter.format(frame));
+		System.out.println("i, rv, sv, s: " + frame + ", " + rv + ", " + sv
+				+ ", " + s);
+	}
+
+	
+	public void pov() throws IOException {
 
 		double ann = (3 * r + s) / 4;
 		double p = ann - s;
 
 		pipe("gearMacros.pov");
 		pipe("sunCW.pov", "union {", "	cylinder { <1,0,0>,<-30,0,0>,1.5 } \n"
-				+ "	texture { ac3d_col_6 }\n" + " rotate<" + s + ",0,0>\n"
+				+ Comp.DRSun.texture() + " rotate<" + s + ",0,0>\n"
 				+ "	translate<30,0,0>}");
-		pipe("outerCW.pov", "union {", "texture { ac3d_col_3 }\n" + " rotate<"
+		pipe("outerCW.pov", "union {", Comp.DROuter.texture() + " rotate<"
 				+ r + ",0,0>}\n");
-		pipe("planetCW.pov", "union {", "    texture { ac3d_col_9 }\n"
+		pipe("planetCW.pov", "union {", Comp.DRPlanet.texture()
 				+ " rotate <" + ((3 * r + s) / 4) + ",0,0>\n"
 				+ "	translate<-30,0,0>\n" + "}\n");
 
 		print("union {\n" + "	object{ GearInv ( 60, 0.15, 0.5) \n"
-				+ "	        texture { ac3d_col_3 }\n" + "	        rotate<0,"
+				+ Comp.DROuter.texture() + "	        rotate<0,"
 				+ r
 				+ ",0>\n"
 				+ "	}\n"
 				+ "	\n"
 				+ "	object{ Gear ( 20, 0.15, 0.5) \n"
-				+ "	        texture { ac3d_col_6 }\n"
+				+ Comp.DRSun.texture()
 				+ "	        rotate<0,"
 				+ s
 				+ ",0>\n"
@@ -36,8 +96,8 @@ public class Planetary extends PovBase {
 				+ "		union{\n"
 				+ "		object{ Gear (20, 0.15, 0.5) }\n"
 				+ "			cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n"
-				+ "				    texture { ac3d_col_9 }\n"
-				+ "		    texture { ac3d_col_9 }\n"
+				+ Comp.DRPlanet.texture()
+				+ Comp.DRPlanet.texture()
 				+ "		    rotate<0,"
 				+ (p + 180 / 20)
 				+ ",0>\n"
@@ -47,8 +107,8 @@ public class Planetary extends PovBase {
 				+ "		object{ Gear (20, 0.15, 0.5) \n"
 				+ "		}\n"
 				+ "		cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n"
-				+ "				    texture { ac3d_col_9 }\n"
-				+ "		    texture { ac3d_col_9 }\n"
+				+ Comp.DRPlanet.texture()
+				+ Comp.DRPlanet.texture()
 				+ "		    rotate<0,"
 				+ (p + 180 / 20)
 				+ ",0>\n"
@@ -58,8 +118,8 @@ public class Planetary extends PovBase {
 				+ "		object{ Gear (20, 0.15, 0.5) \n"
 				+ "		}\n"
 				+ "		cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n"
-				+ "				    texture { ac3d_col_9 }\n"
-				+ "		    texture { ac3d_col_9 }\n"
+				+ Comp.DRPlanet.texture()
+				+ Comp.DRPlanet.texture()
 				+ "		    rotate<0,"
 				+ (p + 180 / 20)
 				+ ",0>\n"
@@ -69,7 +129,7 @@ public class Planetary extends PovBase {
 				+ "		object{ Gear (20, 0.15, 0.5) \n"
 				+ "		}\n"
 				+ "		cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n"
-				+ "				    texture { ac3d_col_9 }\n"
+				+ Comp.DRPlanet.texture()
 				+ "		    rotate<0,"
 				+ (p + 180 / 20)
 				+ ",0>\n"
@@ -84,15 +144,15 @@ public class Planetary extends PovBase {
 	}
 
 	
-	public void legend(int rv, int sv, int s, int legend_scale) throws IOException {
-		cylinder(new Vec(44,0,0),new Vec(44, ndg(rv * legend_scale),0), 2, 3);
-		cylinder(new Vec(48,0,0),new Vec(48, ndg((3 * rv + sv) / 4 * legend_scale),0), 2, 9);
-		cylinder(new Vec(52,0,0),new Vec(52, ndg(sv * legend_scale),0), 2, 6);
-		cylinder(new Vec(60,0,0),new Vec(60, ndg(s / 500 * legend_scale),0), 2, 10);
+	public void legend(int legend_scale) throws IOException {
+		cylinder(new Vec(44,0,0),new Vec(44, ndg(rv * legend_scale),0), 2, Comp.DROuter);
+		cylinder(new Vec(48,0,0),new Vec(48, ndg((3 * rv + sv) / 4 * legend_scale),0), 2, Comp.DRPlanet);
+		cylinder(new Vec(52,0,0),new Vec(52, ndg(sv * legend_scale),0), 2, Comp.DRSun);
+		cylinder(new Vec(60,0,0),new Vec(60, 0, ndg(s / 500 * legend_scale)), 2, Comp.DRSun);
 	}
 	
-	private void cylinder(Vec base, Vec top, double width, int color) throws IOException {
-		print("union {	cylinder { " + base + "," + top + "," + width + "} \n" + "	texture { ac3d_col_" + color + " }}\n");		
+	private void cylinder(Vec base, Vec top, double width, Comp c) throws IOException {
+		print("union {	cylinder { " + base + "," + top + "," + width + "} \n" + c.texture() + "}\n");		
 	}
 	
 

@@ -43,17 +43,13 @@ public class CompSet extends PovBase {
 			dedup.addAll(child.comps);
 		}
 		for (Comp c : dedup) {
-			Vec color = vec(nm(c.color.getRed()), nm(c.color.getGreen()),
-					nm(c.color.getBlue()));
-			pipe("parse/" + c.name(), "", "texture { pigment{ color rgbf "
-					+ color + "}" + c.finish + "}}");
+			c.print();
 		}
+		
+		
 	}
 
-	private static double nm(int i) {
-		double c = ((double) i) / 255;
-		return c;
-	}
+	
 	
 	public static CompSet all() {
 		CompSet all = new CompSet();
