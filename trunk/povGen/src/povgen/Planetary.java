@@ -49,9 +49,10 @@ public class Planetary extends PovBase {
 		pipe("sceneIndoors.pov");
 
 		print("union {");
-		pov();
-		legend(15);
-		print(" rotate <0, 180, 0> translate <0, 111.52, -697.795>}");
+		pov(Comp.Flywheel, Comp.Generator, Comp.DRSAAxle);
+		legend(15, Comp.Flywheel, Comp.Generator, Comp.DRSAAxle);
+		Vec translate = vec(0, 111.52, -697.795);
+		print(" rotate <0, 180, 0> translate " + translate + "}");
 		
 //		Comp.DRSAAxle.print();
 //		Comp.DRSACasing.print();
@@ -64,29 +65,29 @@ public class Planetary extends PovBase {
 	}
 
 	
-	public void pov() throws IOException {
+	public void pov(Comp outerComp, Comp planetComp, Comp sunComp) throws IOException {
 
 		double ann = (3 * r + s) / 4;
 		double p = ann - s;
 
 		pipe("gearMacros.pov");
 		pipe("sunCW.pov", "union {", "	cylinder { <1,0,0>,<-30,0,0>,1.5 } \n"
-				+ Comp.DRSun.texture() + " rotate<" + s + ",0,0>\n"
+				+ sunComp.texture() + " rotate<" + s + ",0,0>\n"
 				+ "	translate<30,0,0>}");
-		pipe("outerCW.pov", "union {", Comp.DROuter.texture() + " rotate<"
+		pipe("outerCW.pov", "union {", outerComp.texture() + " rotate<"
 				+ r + ",0,0>}\n");
-		pipe("planetCW.pov", "union {", Comp.DRPlanet.texture()
+		pipe("planetCW.pov", "union {", planetComp.texture()
 				+ " rotate <" + ((3 * r + s) / 4) + ",0,0>\n"
 				+ "	translate<-30,0,0>\n" + "}\n");
 
 		print("union {\n" + "	object{ GearInv ( 60, 0.15, 0.5) \n"
-				+ Comp.DROuter.texture() + "	        rotate<0,"
+				+ outerComp.texture() + "	        rotate<0,"
 				+ r
 				+ ",0>\n"
 				+ "	}\n"
 				+ "	\n"
 				+ "	object{ Gear ( 20, 0.15, 0.5) \n"
-				+ Comp.DRSun.texture()
+				+ sunComp.texture()
 				+ "	        rotate<0,"
 				+ s
 				+ ",0>\n"
@@ -96,8 +97,8 @@ public class Planetary extends PovBase {
 				+ "		union{\n"
 				+ "		object{ Gear (20, 0.15, 0.5) }\n"
 				+ "			cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n"
-				+ Comp.DRPlanet.texture()
-				+ Comp.DRPlanet.texture()
+				+ planetComp.texture()
+				+ planetComp.texture()
 				+ "		    rotate<0,"
 				+ (p + 180 / 20)
 				+ ",0>\n"
@@ -107,8 +108,8 @@ public class Planetary extends PovBase {
 				+ "		object{ Gear (20, 0.15, 0.5) \n"
 				+ "		}\n"
 				+ "		cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n"
-				+ Comp.DRPlanet.texture()
-				+ Comp.DRPlanet.texture()
+				+ planetComp.texture()
+				+ planetComp.texture()
 				+ "		    rotate<0,"
 				+ (p + 180 / 20)
 				+ ",0>\n"
@@ -118,8 +119,8 @@ public class Planetary extends PovBase {
 				+ "		object{ Gear (20, 0.15, 0.5) \n"
 				+ "		}\n"
 				+ "		cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n"
-				+ Comp.DRPlanet.texture()
-				+ Comp.DRPlanet.texture()
+				+ planetComp.texture()
+				+ planetComp.texture()
 				+ "		    rotate<0,"
 				+ (p + 180 / 20)
 				+ ",0>\n"
@@ -129,7 +130,7 @@ public class Planetary extends PovBase {
 				+ "		object{ Gear (20, 0.15, 0.5) \n"
 				+ "		}\n"
 				+ "		cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n"
-				+ Comp.DRPlanet.texture()
+				+ planetComp.texture()
 				+ "		    rotate<0,"
 				+ (p + 180 / 20)
 				+ ",0>\n"
@@ -144,11 +145,11 @@ public class Planetary extends PovBase {
 	}
 
 	
-	public void legend(int legend_scale) throws IOException {
-		cylinder(new Vec(44,0,0),new Vec(44, ndg(rv * legend_scale),0), 2, Comp.DROuter);
-		cylinder(new Vec(48,0,0),new Vec(48, ndg((3 * rv + sv) / 4 * legend_scale),0), 2, Comp.DRPlanet);
-		cylinder(new Vec(52,0,0),new Vec(52, ndg(sv * legend_scale),0), 2, Comp.DRSun);
-		cylinder(new Vec(60,0,0),new Vec(60, 0, ndg(s / 500 * legend_scale)), 2, Comp.DRSun);
+	public void legend(int legend_scale, Comp outer, Comp planet, Comp sun) throws IOException {
+		cylinder(new Vec(44,0,0),new Vec(44, ndg(rv * legend_scale),0), 2, outer);
+		cylinder(new Vec(48,0,0),new Vec(48, ndg((3 * rv + sv) / 4 * legend_scale),0), 2, planet);
+		cylinder(new Vec(52,0,0),new Vec(52, ndg(sv * legend_scale),0), 2, sun);
+		cylinder(new Vec(60,0,0),new Vec(60, 0, ndg(s / 500 * legend_scale)), 2, sun);
 	}
 	
 	private void cylinder(Vec base, Vec top, double width, Comp c) throws IOException {

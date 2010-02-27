@@ -10,7 +10,6 @@ public class CompSet extends PovBase {
 	Set<CompSet> children = new HashSet<CompSet>();
 
 	public static CompSet steeringFloating = new CompSet();
-	public static CompSet pivotBase = new CompSet();
 	static {
 		steeringFloating.comps.add(Comp.BlueSteeringChain);
 		steeringFloating.comps.add(Comp.KiteLineBlue);
@@ -30,10 +29,9 @@ public class CompSet extends PovBase {
 		steeringFloating.comps.add(Comp.SteeringSpoolChainwheelRed);
 		steeringFloating.comps.add(Comp.SteeringSpoolRed);
 		steeringFloating.comps.add(Comp.SteeringSpoolsAxle);
-		steeringFloating.comps.add(Comp.SteeringWheel);
+//		steeringFloating.comps.add(Comp.SteeringWheel);
 		steeringFloating.comps.add(Comp.SteerningSAHubBlue);
-		
-		pivotBase.comps.add(Comp.AnchoredPivotBase);
+		steeringFloating.comps.add(Comp.TransmissionLinePivot);
 	}
 
 	public void print() throws IOException {
@@ -51,11 +49,22 @@ public class CompSet extends PovBase {
 
 	
 	
-	public static CompSet all() {
+	public static CompSet allAc3d() {
 		CompSet all = new CompSet();
 		for(Comp c : Comp.values()) {
-			all.comps.add(c);
+				all.comps.add(c);
 		}
 		return all;
+	}
+
+
+
+	public static CompSet anchoredSet() {
+		CompSet ret = allAc3d();
+		for(Comp c : CompSet.steeringFloating.comps) {
+			ret.comps.remove(c);
+		}
+		ret.comps.remove(Comp.SteeringWheel);
+		return ret;
 	}
 }
