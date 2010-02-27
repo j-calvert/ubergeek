@@ -3,13 +3,13 @@ package povgen;
 import java.io.IOException;
 
 
-public class CameraStill extends PlanetarySteeringMovie {
+public class CameraStill extends Planetary {
 
 	public static void main(String[] args) throws IOException {
 //		Ac3d.parse("render.pov");
 		CameraStill still = new CameraStill();
-		still.camLoc = vec(-100, 175, -600);
-		still.camLook = vec(0, 100, -720);		
+		still.camLoc = vec(-50, 130, -670);
+		still.camLook = vec(0, 100, -700);		
 //		Total perspective
 //		still.camLoc = vec(-300, 600, 600);
 //		still.camLook = vec(0, 300, 0);
@@ -23,13 +23,10 @@ public class CameraStill extends PlanetarySteeringMovie {
 		pipe("declare.pov");
 		pipe("sceneGrassyField.pov");
 		
-//		print("union {");
-//		pov(Comp.SteeringSARedChainWheel, Comp.SteeringSABlueChainwheel, Comp.SteeringSAAxle);
-//		Vec translate = vec(0, 250.4, -47.6924);
-//		print(" rotate <0, 0, 0> translate " + translate + "}");
-//		Comp.PivotFrame.print();
-//		Comp.SteeringSAAxle.print();
-//		Comp.SteeringWheel.print();
+		print("union {");
+		pov(Comp.Flywheel, Comp.Generator, Comp.TransmissionChain);
+		Vec translate = vec(0, 111.526, -697.795);
+		print(" rotate <0, 0, 0> translate " + translate + "}");
 
 
 //		print("union {");
@@ -41,10 +38,11 @@ public class CameraStill extends PlanetarySteeringMovie {
 		
 		print("union {");
 		CompSet allAc3d = CompSet.allAc3d();
-//		allAc3d.comps.remove(Comp.SteeringSARedChainWheel);
-//		allAc3d.comps.remove(Comp.SteeringSABlueChainwheel);
-//		allAc3d.comps.remove(Comp.SteeringSANubRed);
-//		allAc3d.comps.remove(Comp.SteerningSAHubBlue);
+		allAc3d.comps.remove(Comp.DRSACasing);
+		allAc3d.comps.remove(Comp.DRSAPlanetNub);
+		allAc3d.comps.remove(Comp.RecoilSAChainwheel);
+		allAc3d.comps.remove(Comp.FlywheelSAChainwheel);
+		allAc3d.comps.remove(Comp.GeneratorSAChainwheel);
 		allAc3d.print();
 		print("}");
 

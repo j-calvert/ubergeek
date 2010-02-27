@@ -71,14 +71,14 @@ public class Planetary extends PovBase {
 		double p = ann - s;
 
 		pipe("gearMacros.pov");
-		pipe("sunCW.pov", "union {", "	cylinder { <1,0,0>,<-30,0,0>,1.5 } \n"
-				+ sunComp.texture() + " rotate<" + s + ",0,0>\n"
-				+ "	translate<30,0,0>}");
-		pipe("outerCW.pov", "union {", outerComp.texture() + " rotate<"
-				+ r + ",0,0>}\n");
-		pipe("planetCW.pov", "union {", planetComp.texture()
-				+ " rotate <" + ((3 * r + s) / 4) + ",0,0>\n"
-				+ "	translate<-30,0,0>\n" + "}\n");
+//		pipe("sunCW.pov", "union {", "	cylinder { <1,0,0>,<-30,0,0>,1.5 } \n"
+//				+ sunComp.texture() + " rotate<" + s + ",0,0>\n"
+//				+ "	translate<30,0,0>}");
+//		pipe("outerCW.pov", "union {", outerComp.texture() + " rotate<"
+//				+ r + ",0,0>}\n");
+//		pipe("planetCW.pov", "union {", planetComp.texture()
+//				+ " rotate <" + ((3 * r + s) / 4) + ",0,0>\n"
+//				+ "	translate<-30,0,0>\n" + "}\n");
 
 		print("union {\n" + "	object{ GearInv ( 60, 0.15, 0.5) \n"
 				+ outerComp.texture() + "	        rotate<0,"
@@ -96,7 +96,7 @@ public class Planetary extends PovBase {
 				+ "	union{\n"
 				+ "		union{\n"
 				+ "		object{ Gear (20, 0.15, 0.5) }\n"
-				+ "			cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n"
+//				+ "			cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n"
 				+ planetComp.texture()
 				+ planetComp.texture()
 				+ "		    rotate<0,"
@@ -107,7 +107,7 @@ public class Planetary extends PovBase {
 				+ "		union{\n"
 				+ "		object{ Gear (20, 0.15, 0.5) \n"
 				+ "		}\n"
-				+ "		cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n"
+//				+ "		cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n"
 				+ planetComp.texture()
 				+ planetComp.texture()
 				+ "		    rotate<0,"
@@ -118,7 +118,7 @@ public class Planetary extends PovBase {
 				+ "		union{\n"
 				+ "		object{ Gear (20, 0.15, 0.5) \n"
 				+ "		}\n"
-				+ "		cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n"
+//				+ "		cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n"
 				+ planetComp.texture()
 				+ planetComp.texture()
 				+ "		    rotate<0,"
@@ -129,7 +129,7 @@ public class Planetary extends PovBase {
 				+ "		union{\n"
 				+ "		object{ Gear (20, 0.15, 0.5) \n"
 				+ "		}\n"
-				+ "		cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n"
+//				+ "		cylinder { <0,0,0>,<0,-30/16,0>,.15 } \n"
 				+ planetComp.texture()
 				+ "		    rotate<0,"
 				+ (p + 180 / 20)
