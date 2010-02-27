@@ -64,10 +64,6 @@ public class CameraMan extends PovBase {
 		print("Grass_Field");
 		print("Sky_With_Coulds");
 		
-		print("union{");
-		CompSet.steeringFloating.print();
-		print(" rotate<0, " + pivotAngle + ",0>}");
-		CompSet.pivotBase.print();
 		snap(formatter.format("cameraMan" + frame));
 	}
 	

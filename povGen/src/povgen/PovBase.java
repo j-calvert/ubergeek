@@ -76,7 +76,15 @@ public class PovBase {
 	}
 
 	protected void snap(String name) {
-		exec("povray +UV +UL +A0.2 +FN16 -W640 -H480 out.pov +O"
+		snap(name, 640);
+	}
+	
+	protected void snap(String name, int width) {
+		if(width % 4 != 0){
+			throw new RuntimeException("width not multiple of 4");
+		}
+		int height = width / 4 * 3;
+		exec("povray +UV +UL +A0.2 +FN16 -W" + width + " -H" + height + " out.pov +O"
 			+ name + ".png");
 	}
 	
@@ -138,7 +146,7 @@ public class PovBase {
 	protected String camera(Vec camLoc, Vec camLook, double camAngle) {
 		return "      camera {  location " + camLoc + "\n"
 				+ "        up < 0.000000, 1.000000, 0.000000>\n"
-				+ "        right < 0.000, 0.000000, 1.0>\n"
+				+ "        right < 0.000, 0.000000, -1.0>\n"
 				+ "        look_at  " + camLook + "\n"
 				+ "        angle " + camAngle + " }";
 	}
