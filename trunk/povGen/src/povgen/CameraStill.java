@@ -8,8 +8,8 @@ public class CameraStill extends PlanetarySteeringMovie {
 	public static void main(String[] args) throws IOException {
 //		Ac3d.parse("render.pov");
 		CameraStill still = new CameraStill();
-		still.camLoc = vec(-600, 400, -130);
-		still.camLook = vec(0, 400, -100);		
+		still.camLoc = vec(-100, 175, -600);
+		still.camLook = vec(0, 100, -720);		
 //		Total perspective
 //		still.camLoc = vec(-300, 600, 600);
 //		still.camLook = vec(0, 300, 0);
@@ -19,7 +19,6 @@ public class CameraStill extends PlanetarySteeringMovie {
 	private void shootFrame() throws IOException {
 		newFrame();
 		print(light(vec(-2000, 2500, 200), vec(1,1,1)));
-		print(light(camLoc, vec(.2,.2,.2)));
 		print(camera(camLoc, camLook, camAngle));
 		pipe("declare.pov");
 		pipe("sceneGrassyField.pov");
@@ -40,12 +39,14 @@ public class CameraStill extends PlanetarySteeringMovie {
 //		print(" rotate <0, 180, 0> translate " + translate + "}");
 
 		
+		print("union {");
 		CompSet allAc3d = CompSet.allAc3d();
 //		allAc3d.comps.remove(Comp.SteeringSARedChainWheel);
 //		allAc3d.comps.remove(Comp.SteeringSABlueChainwheel);
 //		allAc3d.comps.remove(Comp.SteeringSANubRed);
 //		allAc3d.comps.remove(Comp.SteerningSAHubBlue);
 		allAc3d.print();
+		print("}");
 
 		snap("still");
 		System.out.println(camLoc + " " + camLook);
