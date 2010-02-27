@@ -3,13 +3,13 @@ package povgen;
 import java.io.IOException;
 
 
-public class CameraStill extends Planetary {
+public class CameraStill extends PlanetaryDRMovie {
 
 	public static void main(String[] args) throws IOException {
 //		Ac3d.parse("render.pov");
 		CameraStill still = new CameraStill();
-		still.camLoc = vec(-50, 130, -670);
-		still.camLook = vec(0, 100, -700);		
+		still.camLoc = vec(-400, 190, -720);
+		still.camLook = vec(0, 110, -720);		
 //		Total perspective
 //		still.camLoc = vec(-300, 600, 600);
 //		still.camLook = vec(0, 300, 0);
@@ -38,15 +38,15 @@ public class CameraStill extends Planetary {
 		
 		print("union {");
 		CompSet allAc3d = CompSet.allAc3d();
-		allAc3d.comps.remove(Comp.DRSACasing);
-		allAc3d.comps.remove(Comp.DRSAPlanetNub);
-		allAc3d.comps.remove(Comp.RecoilSAChainwheel);
-		allAc3d.comps.remove(Comp.FlywheelSAChainwheel);
-		allAc3d.comps.remove(Comp.GeneratorSAChainwheel);
+//		allAc3d.comps.remove(Comp.DRSACasing);
+//		allAc3d.comps.remove(Comp.DRSAPlanetNub);
+//		allAc3d.comps.remove(Comp.RecoilSAChainwheel);
+//		allAc3d.comps.remove(Comp.FlywheelSAChainwheel);
+//		allAc3d.comps.remove(Comp.GeneratorSAChainwheel);
 		allAc3d.print();
 		print("}");
 
-		snap("still");
+		snapWide("still", 800);
 		System.out.println(camLoc + " " + camLook);
 	}
 	
