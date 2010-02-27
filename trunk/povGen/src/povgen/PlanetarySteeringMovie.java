@@ -29,13 +29,13 @@ public class PlanetarySteeringMovie extends PovBase {
 	private void advance() {
 		time = ((double) frame) / FRAMES_PER_SECOND;
 		double period = 4;
-		s = 360 * Math.sin(time / period);
+		s = 360 * Math.sin(2 * Math.PI * time / period);
 		if(s> 180) {
 			s = 180;
 		} else if(s < -180) {
 			s = -180;
 		}
-		pivotAngle = -30 * Math.cos(time/period);
+		pivotAngle = -30 * Math.cos(2 * Math.PI * time/period);
 		r = -s/6;
 	}
 
