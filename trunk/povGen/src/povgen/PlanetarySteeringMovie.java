@@ -27,7 +27,7 @@ public class PlanetarySteeringMovie extends PovBase {
 	}
 
 	private void advance() {
-		time = frame / FRAMES_PER_SECOND;
+		time = ((double) frame) / FRAMES_PER_SECOND;
 		double period = 4;
 		s = 360 * Math.sin(time / period);
 		if(s> 180) {
@@ -62,8 +62,7 @@ public class PlanetarySteeringMovie extends PovBase {
 		newFrame();
 		print(light(vec(-2000, 2500, 500), vec(1,1,1)));
 		camLoc = vec(-600, 400, -130);
-		camLook = vec(0, 400, -100);		
-		print(light(camLoc, vec(.2,.2,.2)));
+		camLook = vec(0, 400, -60);		
 		print(camera(camLoc, camLook, camAngle));
 		pipe("declare.pov");
 		pipe("sceneGrassyField.pov");
