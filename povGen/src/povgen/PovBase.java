@@ -87,6 +87,15 @@ public class PovBase {
 		exec("povray +UV +UL +A0.2 +FN16 -W" + width + " -H" + height + " out.pov +O"
 			+ name + ".png");
 	}
+
+	protected void snapWide(String name, int width) {
+		if(width % 4 != 0){
+			throw new RuntimeException("width not multiple of 4");
+		}
+		int height = width / 2;
+		exec("povray +UV +UL +A0.2 +FN16 -W" + width + " -H" + height + " out.pov +O"
+			+ name + ".png");
+	}
 	
 	protected void exec(String cmd) {
 		String s = null;
