@@ -6,6 +6,8 @@ public class PlanetaryDRMovie extends PovBase {
 
 
 	double rvm, svm, pvm, sm;
+	int ecnt = 0;
+
 	boolean engaged = false;
 
 	public static void main(String[] args) throws Exception {
@@ -30,13 +32,15 @@ public class PlanetaryDRMovie extends PovBase {
 	private void advance() {
 		time = (double) frame / FRAMES_PER_SECOND;
 		sv = MAX_ANGULAR_VEL * Math.sin(Math.PI / (float) 2 / (float) SUN_PERIOD * time);
-		System.out.println(s + " " + svm + " " + time + " " + (Math.PI / (float) 2 / (float) SUN_PERIOD * time));
+//		System.out.println(s + " " + svm + " " + time + " " + (Math.PI / (float) 2 / (float) SUN_PERIOD * time));
 		engaged = false;
 		if (3 * sv >= rv) {
 			rv = 3 * sv;
 			engaged = true;
-		} else if (sv < 0 && rv > MAX_ANGULAR_VEL * .6) {
-			rv = rv - .5 / 10000;
+			ecnt++;
+		} 
+		if (sv < 3 * 2 * MAX_ANGULAR_VEL && rv > 2 * MAX_ANGULAR_VEL) {
+			rv = rv - .005;
 		}
 		s = s + 360 * sv / 60;
 		r = r + 360 * rv / 60;
@@ -54,6 +58,8 @@ public class PlanetaryDRMovie extends PovBase {
 		if(pv > pvm) {
 			pvm = pv;
 		}
+//		System.out.println(engaged + " " + rv + " " + sv);
+		
 		// cY = 5 * frame;
 		// cZ = -100 * frame + 500;
 //		camLoc.x = 1000 * Math.sin(Math.PI / 8 * frame);
