@@ -5,6 +5,8 @@ import java.io.IOException;
 public class PlanetaryDRMovie extends PovBase {
 
 
+	double rvm, svm, pvm, sm;
+	boolean engaged = false;
 
 	public static void main(String[] args) throws Exception {
 		new PlanetaryDRMovie().movie();
@@ -12,28 +14,46 @@ public class PlanetaryDRMovie extends PovBase {
 	}
 
 	private void movie() throws IOException {
-		NUM_FRAMES = 1;
+		NUM_FRAMES = 400;
 		camLoc = vec(-45, 0, 80);
 		camLook = vec(0, 0, 0);
+		s = 100;
 		for (frame = 0; frame < NUM_FRAMES; frame++) {
 			advance();
-			shootFrame();
 		}
+		shootFrame();
 		// exec("mogrify -format jpg -quality 90 *.png");
 		// new File("video.mpg").delete();
 		// exec("ffmpeg -f image2 -i out%04d.jpg video.mpg");
 	}
 
 	private void advance() {
-		time = frame / FRAMES_PER_SECOND;
-		sv = MAX_ANGULAR_VEL * Math.sin(Math.PI / 2 / SUN_PERIOD * time);
+		time = (double) frame / FRAMES_PER_SECOND;
+		sv = MAX_ANGULAR_VEL * Math.sin(Math.PI / (float) 2 / (float) SUN_PERIOD * time);
+		System.out.println(s + " " + svm + " " + time + " " + (Math.PI / (float) 2 / (float) SUN_PERIOD * time));
+		engaged = false;
 		if (3 * sv >= rv) {
 			rv = 3 * sv;
+			engaged = true;
 		} else if (sv < 0 && rv > MAX_ANGULAR_VEL * .6) {
 			rv = rv - .5 / 10000;
 		}
 		s = s + 360 * sv / 60;
 		r = r + 360 * rv / 60;
+
+		if(s > sm) {
+			sm = s;
+		}
+		if(sv > svm) {
+			svm = sv;
+		}
+		if(rv > rvm) {
+			rvm = rv;
+		}
+		double pv = (3 * rv + sv) / 4;
+		if(pv > pvm) {
+			pvm = pv;
+		}
 		// cY = 5 * frame;
 		// cZ = -100 * frame + 500;
 //		camLoc.x = 1000 * Math.sin(Math.PI / 8 * frame);
@@ -43,14 +63,13 @@ public class PlanetaryDRMovie extends PovBase {
 	private void shootFrame() throws IOException {
 		newFrame();
 		print(light(vec(-2000, 2500, 500), vec(1,1,1)));
-		print(light(camLoc, vec(.2,.2,.2)));
 		print(camera(camLoc, camLook, camAngle));
 		pipe("declare.pov");
 		pipe("sceneIndoors.pov");
 
 		print("union {");
-		pov(Comp.Flywheel, Comp.Generator, Comp.DRSAAxle);
-		legend(15, Comp.Flywheel, Comp.Generator, Comp.DRSAAxle);
+		pov(Comp.Flywheel, (engaged ? Comp.SteeringSpoolRed : Comp.Generator), Comp.DRSAAxle);
+		legend(15, Comp.Flywheel, (engaged ? Comp.SteeringSpoolRed : Comp.Generator), Comp.DRSAAxle);
 //		Vec translate = vec(0, 111.52, -697.795);
 		print(" rotate <0, 180, 0> }");
 		
@@ -59,7 +78,7 @@ public class PlanetaryDRMovie extends PovBase {
 //		Comp.DRSAPlanetNub.print();
 //		Comp.RecoilSAChainwheel.print();
 		
-		snap("planetary" + formatter.format(frame));
+		snap("planetarydr" + formatter.format(frame), 800);
 		System.out.println("i, rv, sv, s: " + frame + ", " + rv + ", " + sv
 				+ ", " + s);
 	}
@@ -72,11 +91,11 @@ public class PlanetaryDRMovie extends PovBase {
 
 		pipe("gearMacros.pov");
 		pipe("sunCW.pov", "union {", "	cylinder { <1,0,0>,<-30,0,0>,1.5 } \n"
-				+ sunComp.texture() + " rotate<" + s + ",0,0>\n"
+				+ sunComp.textureGradient() + " rotate<" + s + ",0,0>\n"
 				+ "	translate<30,0,0>}");
-		pipe("outerCW.pov", "union {", outerComp.texture() + " rotate<"
+		pipe("outerCW.pov", "union {", outerComp.textureGradient() + " rotate<"
 				+ r + ",0,0>}\n");
-		pipe("planetCW.pov", "union {", planetComp.texture()
+		pipe("planetCW.pov", "union {", planetComp.textureGradient()
 				+ " rotate <" + ((3 * r + s) / 4) + ",0,0>\n"
 				+ "	translate<-30,0,0>\n" + "}\n");
 
@@ -146,10 +165,20 @@ public class PlanetaryDRMovie extends PovBase {
 
 	
 	public void legend(int legend_scale, Comp outer, Comp planet, Comp sun) throws IOException {
+		double pv = (3 * rv + sv) / 4;
 		cylinder(new Vec(44,0,0),new Vec(44, ndg(rv * legend_scale),0), 2, outer);
-		cylinder(new Vec(48,0,0),new Vec(48, ndg((3 * rv + sv) / 4 * legend_scale),0), 2, planet);
+		cylinder(new Vec(48,0,0),new Vec(48, ndg(pv * legend_scale),0), 2, planet);
 		cylinder(new Vec(52,0,0),new Vec(52, ndg(sv * legend_scale),0), 2, sun);
-		cylinder(new Vec(60,0,0),new Vec(60, 0, ndg(s / 500 * legend_scale)), 2, sun);
+		cylinder(new Vec(58,0,0),new Vec(58, ndg(s / 200 * legend_scale),0), .7, Comp.BlueSteeringChain);
+		cylinder(new Vec(56,0,0),new Vec(56, ndg(s / 200 * legend_scale),0), .7, Comp.RedSteerinChain);
+	}
+	public void legendm(int legend_scale, Comp outer, Comp planet, Comp sun) throws IOException {
+		cylinder(new Vec(44,0,0),new Vec(44, ndg(rvm * legend_scale),0), 2, outer);
+		cylinder(new Vec(48,0,0),new Vec(48, ndg(pvm * legend_scale),0), 2, planet);
+		cylinder(new Vec(52,0,0),new Vec(52, ndg(svm * legend_scale),0), 2, sun);
+		cylinder(new Vec(58,0,0),new Vec(58, ndg(sm / 200 * legend_scale),0), .7, Comp.BlueSteeringChain);
+		cylinder(new Vec(56,0,0),new Vec(56, ndg(sm / 200 * legend_scale),0), .7, Comp.RedSteerinChain);
+		System.out.println("legend " + rvm + " " + sm);
 	}
 	
 	private void cylinder(Vec base, Vec top, double width, Comp c) throws IOException {
@@ -158,7 +187,7 @@ public class PlanetaryDRMovie extends PovBase {
 	
 
 	private double ndg(double d) {
-		return d == 0 ? .000000001 : d;
+		return Math.abs(d) < .00000001 ? .00000001 : d;
 	}
 
 }

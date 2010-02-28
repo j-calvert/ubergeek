@@ -140,6 +140,9 @@ public class PovBase {
 		public Vec ave(Vec that, double d) {
 			return vec(this.x * (1 - d) + that.x * d, this.y * (1 - d) + that.y * d, this.z * (1 - d) + that.z * d);
 		}
+		public Vec scale(double d) {
+			return vec(this.x * d, this.y * d, this.z * d);
+		}
 		
 	}
 	

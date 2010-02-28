@@ -75,6 +75,15 @@ public enum Comp {
 		return "texture { pigment{ color rgbf " + clr + "} " + finish + "}";
 	}
 
+	public String textureGradient() {
+		Vec clr = PovBase.vec(nm(color.getRed()), nm(color.getGreen()),
+				nm(color.getBlue()));
+		Vec clr2 = clr.scale(0.7);
+//		return "texture { pigment{ checker color rgb<1,1,1> color rgb<0,1,0> } " + finish + "}";
+		return "texture { pigment{ gradient<0,1,0> color_map{[0.0 color rgb " + clr + "] [0.5 color rgb " + clr + "] [0.5 color rgb " + clr2 + "] [1.0 color rgb " + clr2 + "] } scale <1,10,1> }\n" 
+				 + finish + "}";
+		}
+
 	private static double nm(int i) {
 		double c = ((double) i) / 255;
 		return c;
