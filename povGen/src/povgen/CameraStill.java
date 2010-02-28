@@ -8,8 +8,8 @@ public class CameraStill extends PlanetaryDRMovie {
 	public static void main(String[] args) throws IOException {
 //		Ac3d.parse("render.pov");
 		CameraStill still = new CameraStill();
-		still.camLoc = vec(-400, 190, -720);
-		still.camLook = vec(0, 110, -720);		
+		still.camLoc = vec(-500, 125, -600);
+		still.camLook = vec(0, 125, -600);		
 //		Total perspective
 //		still.camLoc = vec(-300, 600, 600);
 //		still.camLook = vec(0, 300, 0);
@@ -23,10 +23,10 @@ public class CameraStill extends PlanetaryDRMovie {
 		pipe("declare.pov");
 		pipe("sceneGrassyField.pov");
 		
-		print("union {");
-		pov(Comp.Flywheel, Comp.Generator, Comp.TransmissionChain);
-		Vec translate = vec(0, 111.526, -697.795);
-		print(" rotate <0, 0, 0> translate " + translate + "}");
+//		print("union {");
+//		pov(Comp.Flywheel, Comp.Generator, Comp.TransmissionChain);
+//		Vec translate = vec(0, 111.526, -697.795);
+//		print(" rotate <0, 0, 0> translate " + translate + "}");
 
 
 //		print("union {");
@@ -36,17 +36,26 @@ public class CameraStill extends PlanetaryDRMovie {
 //		print(" rotate <0, 180, 0> translate " + translate + "}");
 
 		
-		print("union {");
-		CompSet allAc3d = CompSet.allAc3d();
+//		print("union {");
+//		CompSet allAc3d = CompSet.allAc3d();
 //		allAc3d.comps.remove(Comp.DRSACasing);
 //		allAc3d.comps.remove(Comp.DRSAPlanetNub);
 //		allAc3d.comps.remove(Comp.RecoilSAChainwheel);
 //		allAc3d.comps.remove(Comp.FlywheelSAChainwheel);
 //		allAc3d.comps.remove(Comp.GeneratorSAChainwheel);
-		allAc3d.print();
-		print("}");
+//		allAc3d.print();
+//		print("}");
+		
+		pivotAngle = -50;
+		print("union{");
+		CompSet.steeringFloating.print();
+		pipe("steeringWheel.pov", "union { ", Comp.SteeringWheel.texture() +" rotate<" + s + ",0,0> translate <0, 250.952, -47.5893>}");
+		print(" rotate<0, " + pivotAngle + ",0>}");
+		
+		CompSet.anchoredSet().print();
 
-		snapWide("still", 800);
+
+		snap("still", 800);
 		System.out.println(camLoc + " " + camLook);
 	}
 	
