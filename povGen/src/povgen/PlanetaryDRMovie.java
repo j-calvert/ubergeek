@@ -20,8 +20,8 @@ public class PlanetaryDRMovie extends PovBase {
 		s = 100;
 		for (frame = 0; frame < NUM_FRAMES; frame++) {
 			advance();
+			shootFrame();
 		}
-		shootFrame();
 		// exec("mogrify -format jpg -quality 90 *.png");
 		// new File("video.mpg").delete();
 		// exec("ffmpeg -f image2 -i out%04d.jpg video.mpg");

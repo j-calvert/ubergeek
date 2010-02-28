@@ -19,7 +19,7 @@ public class PlanetarySteeringMovie extends PovBase {
 			shootPlanetary();
 			shootPivot();
 			String frm = formatter.format(frame);
-			exec("convert pivot" + frm + ".png planetary" + frm + ".png -gravity Northwest -composite overlap" + frm + ".png");
+			exec("convert pivot" + frm + ".png planetary" + frm + ".png -gravity Northwest -composite overlap" + frm + ".jpg");
 		}
 		// exec("mogrify -format jpg -quality 90 *.png");
 		// new File("video.mpg").delete();
