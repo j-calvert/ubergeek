@@ -8,5 +8,7 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="lib" path="lib/jna.jar"/>
+	<classpathentry kind="lib" path="lib/max.jar"/>
+	<classpathentry kind="lib" path="lib/jitter.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
