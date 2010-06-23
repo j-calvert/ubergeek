@@ -1,4 +1,4 @@
-package kitebot.bot;
+package org.kitebot.bot;
 
 /**
  * Computes acceleration on components of planetary gear drive, using notation

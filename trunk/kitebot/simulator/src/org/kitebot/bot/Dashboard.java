@@ -1,4 +1,4 @@
-package kitebot.bot;
+package org.kitebot.bot;
 
 import java.awt.AWTEvent;
 import java.awt.Color;
