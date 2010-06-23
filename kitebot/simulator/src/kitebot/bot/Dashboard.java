@@ -13,7 +13,7 @@ public class Dashboard extends Component {
 
     private int width, height, posX, posY, lastY = 0;
     
-    private double lineForce = 0;
+    private double lineForceFraction = 0;
     
 	public Dashboard(int posX, int posY, int width, int height) {
         enableEvents(MouseEvent.MOUSE_EVENT_MASK);
@@ -37,11 +37,11 @@ public class Dashboard extends Component {
 		lastY = ((MouseEvent) e).getY();
 		lastY = lastY < 0 ? 0 : lastY;
 		lastY = lastY > height ? height : lastY;
-		lineForce = (50 * (height - lastY)) / height;
-    	System.err.println(lineForce);
+		lineForceFraction = 1d * (height - lastY) / height;
+//    	System.out.println(lineForceFraction);
     }
 
-	public double getLineForce() {
-		return lineForce;
+	public double getLineForceFraction() {
+		return lineForceFraction;
 	}
 }

@@ -5,9 +5,9 @@ package kitebot.bot;
  * in http://www.google.com/search?q=hybrid+electric+vehicle+propulsion+system+
  * architectures+of+the+e-cvt+type
  * 
- * which in turn is based on Jourdain's principle, states that "the internal
- * virtual power produced by the resulting constraint forces and torques in a
- * system of N rigid bodies is equal to zero."
+ * The relations in this paper are based on Jourdain's principle, which states
+ * that "the internal virtual power produced by the resulting constraint forces
+ * and torques in a system of N rigid bodies is equal to zero."
  * http://eom.springer.de/v/v096250.htm#v096250_00m6
  * 
  * @author jeremyc
@@ -25,8 +25,8 @@ public class Jourdain {
 	private final static double Je = je + Ge2s * Ge2s * Jg;
 	private final static double Jm = jm + Gr2s * Gr2s * Jg;
 
-//	private double mg, me;
-//	private double e, m;
+	// private double mg, me;
+	// private double e, m;
 
 	private static double CR = 3;
 
@@ -64,22 +64,27 @@ public class Jourdain {
 	}
 
 	private static double fa(double me, double mg) {
-		return me - Ge2s * mg;
+		return me + Ge2s * mg;
 	}
 
 	private static double fb(double mg) {
-		return -Gr2s * mg;
+		return Gr2s * mg;
 	}
 
 	private static double det(double w, double x, double y, double z) {
 		return w * z - x * y;
 	}
 
-	private static double[] ePmP(double w, double x, double y, double z, double fa,
-			double fb) {
+	private static double[] ePmP(double w, double x, double y, double z,
+			double fa, double fb) {
 		double det = det(w, x, y, z);
 		return new double[] { (z * fa - x * fb) / det,
 				(-1 * y * fa + w * fb) / det };
+	}
+
+	public static void main(String[] args) {
+		double[] ret = ePmP(1, 1, 2, 4, 1, 4);
+		System.out.println(ret[0] + " " + ret[1]);
 	}
 
 	private static double g(double e, double m) {
@@ -87,9 +92,11 @@ public class Jourdain {
 		return Ge2s * e + Gr2s * m;
 	}
 
-	private static double[] acc(double d, double e, double m, double me, double mg) {
+	private static double[] acc(double d, double e, double m, double me,
+			double mg) {
 		double[] ePmP = ePmP(w(), x(), y(), z(), fa(me, mg), fb(mg));
-		if (CR * g(e + ePmP[0] * d, m + ePmP[1] * d) >= e + ePmP[0] * d) {
+		if (CR * g(e + ePmP[0] * d, m + ePmP[1] * d) > e + ePmP[0] * d) {
+//			System.out.print("locked ");
 			ePmP = ePmP(w2(), x2(), y2(), z2(), fa2(me, mg), fb2());
 		}
 		ePmP[0] = e + ePmP[0] * d;
@@ -104,11 +111,13 @@ public class Jourdain {
 	 * @param speedRingGear
 	 * @param torquePlanetCarrier
 	 * @param torqueSunGear
-	 * @return
-	 * double[] {PlanetCarrierSpeed, RingGearSpeed}
+	 * @return double[] {PlanetCarrierSpeed, RingGearSpeed}
 	 */
-	public static double[] accelerate(double delta, double speedPlanetCarrier, double speedRingGear, double torquePlanetCarrier, double torqueSunGear) {
-		return acc(delta, speedPlanetCarrier, speedRingGear, torquePlanetCarrier, torqueSunGear);
+	public static double[] accelerate(double delta, double speedPlanetCarrier,
+			double speedRingGear, double torquePlanetCarrier,
+			double torqueSunGear) {
+		return acc(delta, speedPlanetCarrier, speedRingGear,
+				torquePlanetCarrier, torqueSunGear);
 	}
 
 	private static double w2() {

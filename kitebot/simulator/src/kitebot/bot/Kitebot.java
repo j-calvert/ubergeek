@@ -8,17 +8,19 @@ import java.awt.event.MouseEvent;
 
 import kitebot.gear.PlanetaryGear;
 
-public class Bot extends Applet {
+public class Kitebot extends Applet {
 	private PlanetaryGear planetaryGear;
 	private Dashboard dashboard;
 
 	private Image image;
 
-	private double genTorque = -5;
-	private double planetCarrierSpeed = 1, ringGearSpeed = 2;
-	private static final long delta = 10;
+	private static final double MAX_LINE_FORCE = 50;
+	private static final double GEN_TORQUE_BASE = 20;
+	private static final int GEN_TORQUE_INCREASE_FACTOR = 10;
+	private static final long DELTA = 10;
+	private double planetCarrierSpeed = 30, ringGearSpeed = 40;
 
-	public Bot() {
+	public Kitebot() {
 		super();
 		enableEvents(MouseEvent.MOUSE_EVENT_MASK);
 		enableEvents(MouseEvent.MOUSE_MOTION_EVENT_MASK);
@@ -49,14 +51,17 @@ public class Bot extends Applet {
 	}
 
 	public void move(long millisec) {
-		double sunGearTorque = dashboard.getLineForce();
+		double sunGearTorque = MAX_LINE_FORCE * dashboard.getLineForceFraction();
 		double delta = millisec * 1d / 1000d;
+		double genTorque = planetCarrierSpeed > 0 ? GEN_TORQUE_BASE : GEN_TORQUE_BASE;
+		genTorque = genTorque * (1 + planetCarrierSpeed / GEN_TORQUE_INCREASE_FACTOR);
 		double[] accelerate = Jourdain.accelerate(delta, planetCarrierSpeed, ringGearSpeed,
-				genTorque * ringGearSpeed, sunGearTorque);
+				genTorque, sunGearTorque);
 		planetCarrierSpeed = accelerate[0];
 		ringGearSpeed = accelerate[1];
 		planetaryGear.move(millisec, planetCarrierSpeed, ringGearSpeed);
-		System.out.println(planetCarrierSpeed + " " + ringGearSpeed);
+//		System.out.println("spd: " + PlanetaryGear.computeSunGearSpeed(planetCarrierSpeed,
+//				ringGearSpeed) + " " + planetCarrierSpeed + " " + ringGearSpeed + " trq: " + sunGearTorque + " " + genTorque);
 	}
 
 	private class Sim extends Thread {
@@ -66,11 +71,11 @@ public class Bot extends Applet {
 			long t1, t0 = System.currentTimeMillis();
 			while (true) {
 				repaint();
-				move(delta);
+				move(DELTA);
 				t1 = System.currentTimeMillis();
 				try {
-					if (t1 - t0 < delta) {
-						Thread.sleep(delta - (t1 - t0));
+					if (t1 - t0 < DELTA) {
+						Thread.sleep(DELTA - (t1 - t0));
 					}
 				} catch (InterruptedException e) {
 					return;
