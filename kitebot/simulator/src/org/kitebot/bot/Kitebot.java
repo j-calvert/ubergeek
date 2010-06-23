@@ -1,4 +1,4 @@
-package kitebot.bot;
+package org.kitebot.bot;
 
 import java.applet.Applet;
 import java.awt.Color;
@@ -6,7 +6,8 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.MouseEvent;
 
-import kitebot.gear.PlanetaryGear;
+import org.kitebot.gear.PlanetaryGear;
+
 
 public class Kitebot extends Applet {
 	private PlanetaryGear planetaryGear;

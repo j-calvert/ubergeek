@@ -1,4 +1,4 @@
-package kitebot.gear;
+package org.kitebot.gear;
 
 import java.awt.Color;
 import java.awt.Graphics;
