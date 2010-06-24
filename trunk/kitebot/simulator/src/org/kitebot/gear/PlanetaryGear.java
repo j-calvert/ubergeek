@@ -32,11 +32,17 @@ public class PlanetaryGear extends Component {
 		sunGear = new Gear(x, y, sunGearRadius, numSunGearTeeth, nGearDepth);
 		planetCarrier = new PlanetCarrier(x, y, (int) planetCarrierRadius, 10);
 
+		planetCarrier.color2 = Color.red;
+		sunGear.color2 = Color.blue;
+		ringGear.color2 = new Color(0, 0xbb, 0);
+		Color pinionFg = Color.orange;
+		Color pinonBg = Color.darkGray;
 		for (int i = 0; i < planetGears.length; i++) {
 			planetGears[i] = new Gear(x, y, planetGearRadius,
 					numPinionGearTeeth, nGearDepth);
-			planetGears[i].color1 = Color.orange;
-			planetGears[i].color2 = Color.darkGray;
+			
+			planetGears[i].color1 = pinionFg;
+			planetGears[i].color2 = pinonBg;
 			planetGears[i].x = planetCarrier.rotateX(planetCarrierRadius,
 					(2 * Math.PI) * i / planetGears.length);
 			planetGears[i].y = planetCarrier.rotateY(planetCarrierRadius,
@@ -49,9 +55,6 @@ public class PlanetaryGear extends Component {
 					/ numPinionGears);
 		}
 
-		planetCarrier.color2 = Color.red;
-		sunGear.color2 = Color.blue;
-		ringGear.color2 = new Color(0, 0xbb, 0);
 
 		if (numPinionGearTeeth % 2 == 1)
 			sunGear.setAngle(2 * Math.PI / (sunGear.gearCount * 2));

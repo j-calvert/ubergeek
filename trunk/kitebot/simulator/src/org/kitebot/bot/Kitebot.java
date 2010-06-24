@@ -11,13 +11,14 @@ import org.kitebot.gear.PlanetaryGear;
 
 public class Kitebot extends Applet {
 	private PlanetaryGear planetaryGear;
-	private Dashboard dashboard;
+	private SliderInput windInput;
+	private SliderInput genInput;
 
 	private Image image;
 
 	private static final double MAX_LINE_FORCE = 50;
 	private static final double GEN_TORQUE_BASE = 20;
-	private static final int GEN_TORQUE_INCREASE_FACTOR = 10;
+	private static final int GEN_TORQUE_INCREASE_FACTOR = 1;
 	private static final long DELTA = 10;
 	private double planetCarrierSpeed = 30, ringGearSpeed = 40;
 
@@ -29,20 +30,25 @@ public class Kitebot extends Applet {
 	}
 
 	public void init() {
+		setSize(600, 600);
 		setLayout(null);
 		setBackground(Color.WHITE);
-		setSize(600, 600);
-		image = createImage(600, 520);
+		image = createImage(600, 600);
 		planetaryGear = new PlanetaryGear(200, 200, 40, 20, 20, 60, 8, 4);
-		dashboard = new Dashboard(450, 20, 50, 400);
+		windInput = new SliderInput(450, 20, 30, 400);
+		genInput = new SliderInput(500, 20, 30, 400);
+		genInput.setFgColor(Color.orange);
 		this.add(planetaryGear);
-		this.add(dashboard);
+		this.add(windInput);
+		this.add(genInput);
 		new Sim().start();
+		setSize(600, 600);
 	}
 
 	public void paint(Graphics g) {
 		Graphics gi = image.getGraphics();
-		dashboard.paint(gi);
+		windInput.paint(gi);
+		genInput.paint(gi);
 		planetaryGear.paint(gi);
 		g.drawImage(image, 0, 0, null);
 	}
@@ -52,10 +58,10 @@ public class Kitebot extends Applet {
 	}
 
 	public void move(long millisec) {
-		double sunGearTorque = MAX_LINE_FORCE * dashboard.getLineForceFraction();
+		double sunGearTorque = MAX_LINE_FORCE * windInput.getForceFraction();
 		double delta = millisec * 1d / 1000d;
-		double genTorque = planetCarrierSpeed > 0 ? GEN_TORQUE_BASE : GEN_TORQUE_BASE;
-		genTorque = genTorque * (1 + planetCarrierSpeed / GEN_TORQUE_INCREASE_FACTOR);
+		double genTorque = planetCarrierSpeed > 0 ? -GEN_TORQUE_BASE : GEN_TORQUE_BASE;
+		genTorque = genTorque * (1 + GEN_TORQUE_INCREASE_FACTOR * genInput.getForceFraction());
 		double[] accelerate = Jourdain.accelerate(delta, planetCarrierSpeed, ringGearSpeed,
 				genTorque, sunGearTorque);
 		planetCarrierSpeed = accelerate[0];
