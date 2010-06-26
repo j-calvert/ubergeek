@@ -1,11 +1,9 @@
 package org.kitebot.gear;
 
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 
 import org.kitebot.Const;
-import org.kitebot.bot.Jourdain;
 
 public class PlanetaryGear extends Component {
 
