@@ -15,8 +15,7 @@ public class Const {
 		return Ge2s * planetCarrier + Gr2s * ringGear;
 	}
 
-	
 	// Display
-	public final static int gearDepth = 8;
+	public final static int gearDepth = 12;
 
 }

@@ -18,7 +18,6 @@ import org.kitebot.gear.GearState;
  */
 public class Jourdain {
 
-	private final static double k = Const.k;
 	private final static double Ge2s = Const.Ge2s;
 	private final static double Gr2s = Const.Gr2s;
 
@@ -28,9 +27,6 @@ public class Jourdain {
 	private final static double Jg = jg;
 	private final static double Je = je + Ge2s * Ge2s * Jg;
 	private final static double Jm = jm + Gr2s * Gr2s * Jg;
-
-	// private double mg, me;
-	// private double e, m;
 
 	private static double CR = 3;
 
@@ -86,15 +82,11 @@ public class Jourdain {
 				(-1 * y * fa + w * fb) / det };
 	}
 
-	private static double g(double e, double m) {
-		// g = 4e - 3m
-		return Ge2s * e + Gr2s * m;
-	}
 
 	private static double[] acc(double d, double e, double m, double me,
 			double mg) {
 		double[] ePmP = ePmP(w(), x(), y(), z(), fa(me, mg), fb(mg));
-		if (CR * g(e + ePmP[0] * d, m + ePmP[1] * d) > e + ePmP[0] * d) {
+		if (CR * Const.planetaryRelation(e + ePmP[0] * d, m + ePmP[1] * d) > e + ePmP[0] * d) {
 			GearColor.setGearState(GearState.DRIVE);
 			ePmP = ePmP(w2(), x2(), y2(), z2(), fa2(me, mg), fb2());
 		} else {
