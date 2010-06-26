@@ -4,29 +4,28 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 
+import org.kitebot.Const;
+
 public class Gear extends Component {
     protected int gearCount = 50;
 	protected int x = 0, y = 0, rad = 100;
     protected double angle = 0.0;
-    protected Color color1 = Color.white;
-    protected Color color2 = Color.blue;
-    protected Color interior = Color.lightGray;
-    protected int pixelGearDepth = 4;
+    protected GearColor gColor;
 
     private double gearToothAngle;
     private double rSizeH;
     private double rSizeL;
     
-    public Gear(int x, int y, int rad, int gearCount, int pixelGearDepth) {
+    public Gear(int x, int y, int rad, int gearCount, GearColor gColor) {
     	this.x = x;
     	this.y = y;
     	this.rad = rad;
         this.gearCount = gearCount;
-        this.pixelGearDepth = pixelGearDepth;
+        this.gColor = gColor;
 
         gearToothAngle = 2 * Math.PI / gearCount;
-        rSizeH = rad + (double) pixelGearDepth / 2;
-        rSizeL = rad - (double) pixelGearDepth / 2;
+        rSizeH = rad + Const.gearDepth / 2;
+        rSizeL = rad - Const.gearDepth  / 2;
 }
     
 
@@ -50,7 +49,7 @@ public class Gear extends Component {
         spur[0][3] = x;
         spur[1][3] = y;
 
-        g.setColor(color1);
+        g.setColor(gColor.fgClr);
         spur[0][2] = rotateX(rSizeL, 0);
         spur[1][2] = rotateY(rSizeL, 0);
         for (theta = 0.0; theta < Math.PI - 0.000001; theta += gearToothAngle) {
@@ -58,7 +57,7 @@ public class Gear extends Component {
         }
         g.fillArc(x - (int) rSizeL, y - (int) rSizeL, (int) (rSizeL * 2), (int) (rSizeL * 2),
                 180 - (int) (angle / (2 * Math.PI) * 360), 180);
-        g.setColor(color2);
+        g.setColor(gColor.bgClr);
         if (gearCount % 2 == 1) {
             spur[0][0] = rotateX(rSizeL - 1, theta - gearToothAngle / 2);
             spur[1][0] = rotateY(rSizeL - 1, theta - gearToothAngle / 2);
