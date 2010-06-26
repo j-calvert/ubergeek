@@ -1,6 +1,5 @@
 package org.kitebot.bot;
 
-import java.awt.AWTEvent;
 import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;

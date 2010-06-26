@@ -20,7 +20,7 @@ public class Kitebot extends Applet {
 	private static final double GEN_TORQUE_BASE = 20;
 	private static final int GEN_TORQUE_INCREASE_FACTOR = 1;
 	private static final long DELTA = 10;
-	private double planetCarrierSpeed = 30, ringGearSpeed = 40;
+	private double planetCarrierSpeed = 3, ringGearSpeed = 4;
 
 	public Kitebot() {
 		super();

@@ -1,5 +1,9 @@
 package org.kitebot.bot;
 
+import org.kitebot.Const;
+import org.kitebot.gear.GearColor;
+import org.kitebot.gear.GearState;
+
 /**
  * Computes acceleration on components of planetary gear drive, using notation
  * in http://www.google.com/search?q=hybrid+electric+vehicle+propulsion+system+
@@ -14,13 +18,13 @@ package org.kitebot.bot;
  */
 public class Jourdain {
 
-	private final static double k = 3;
-	private final static double Ge2s = k + 1;
-	private final static double Gr2s = -k;
+	private final static double k = Const.k;
+	private final static double Ge2s = Const.Ge2s;
+	private final static double Gr2s = Const.Gr2s;
 
-	private final static double jg = 1;
-	private final static double je = 1;
-	private final static double jm = 100;
+	private final static double jg = Const.jg;
+	private final static double je = Const.je;
+	private final static double jm = Const.jm;
 	private final static double Jg = jg;
 	private final static double Je = je + Ge2s * Ge2s * Jg;
 	private final static double Jm = jm + Gr2s * Gr2s * Jg;
@@ -82,11 +86,6 @@ public class Jourdain {
 				(-1 * y * fa + w * fb) / det };
 	}
 
-	public static void main(String[] args) {
-		double[] ret = ePmP(1, 1, 2, 4, 1, 4);
-		System.out.println(ret[0] + " " + ret[1]);
-	}
-
 	private static double g(double e, double m) {
 		// g = 4e - 3m
 		return Ge2s * e + Gr2s * m;
@@ -96,8 +95,10 @@ public class Jourdain {
 			double mg) {
 		double[] ePmP = ePmP(w(), x(), y(), z(), fa(me, mg), fb(mg));
 		if (CR * g(e + ePmP[0] * d, m + ePmP[1] * d) > e + ePmP[0] * d) {
-//			System.out.print("locked ");
+			GearColor.setGearState(GearState.DRIVE);
 			ePmP = ePmP(w2(), x2(), y2(), z2(), fa2(me, mg), fb2());
+		} else {
+			GearColor.setGearState(GearState.RECOIL);
 		}
 		ePmP[0] = e + ePmP[0] * d;
 		ePmP[1] = m + ePmP[1] * d;
