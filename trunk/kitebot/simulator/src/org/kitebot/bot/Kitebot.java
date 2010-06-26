@@ -6,6 +6,7 @@ import java.awt.Graphics;
 import java.awt.Image;
 import java.awt.event.MouseEvent;
 
+import org.kitebot.Const;
 import org.kitebot.gear.PlanetaryGear;
 
 
@@ -20,7 +21,7 @@ public class Kitebot extends Applet {
 	private static final double GEN_TORQUE_BASE = 20;
 	private static final int GEN_TORQUE_INCREASE_FACTOR = 1;
 	private static final long DELTA = 10;
-	private double planetCarrierSpeed = 3, ringGearSpeed = 4;
+	private double planetCarrierSpeed = 90, ringGearSpeed = 120;
 
 	public Kitebot() {
 		super();
@@ -62,13 +63,17 @@ public class Kitebot extends Applet {
 		double delta = millisec * 1d / 1000d;
 		double genTorque = planetCarrierSpeed > 0 ? -GEN_TORQUE_BASE : GEN_TORQUE_BASE;
 		genTorque = genTorque * (1 + GEN_TORQUE_INCREASE_FACTOR * genInput.getForceFraction());
+		double sunGearSpeed = Const.planetaryRelation(planetCarrierSpeed, ringGearSpeed);
+		if(sunGearTorque < -genTorque && sunGearSpeed > 0) {
+			sunGearTorque = genTorque;
+		}
 		double[] accelerate = Jourdain.accelerate(delta, planetCarrierSpeed, ringGearSpeed,
 				genTorque, sunGearTorque);
 		planetCarrierSpeed = accelerate[0];
 		ringGearSpeed = accelerate[1];
 		planetaryGear.move(millisec, planetCarrierSpeed, ringGearSpeed);
-//		System.out.println("spd: " + PlanetaryGear.computeSunGearSpeed(planetCarrierSpeed,
-//				ringGearSpeed) + " " + planetCarrierSpeed + " " + ringGearSpeed + " trq: " + sunGearTorque + " " + genTorque);
+		System.out.println("spd: " + Const.planetaryRelation(planetCarrierSpeed,
+				ringGearSpeed) + " " + planetCarrierSpeed + " " + ringGearSpeed + " trq: " + sunGearTorque + " " + genTorque);
 	}
 
 	private class Sim extends Thread {
