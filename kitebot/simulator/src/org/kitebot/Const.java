@@ -7,6 +7,10 @@ public class Const {
 	public final static int Ge2s = k + 1;
 	public final static int Gr2s = -k;
 
+	// Ratio of sun to planet ring when locked
+	public static double CR = 5;
+
+
 	// returns sun gear position/velocity
 	public static double planetaryRelation(double planetCarrier, double ringGear) {
 		return Ge2s * planetCarrier + Gr2s * ringGear;
