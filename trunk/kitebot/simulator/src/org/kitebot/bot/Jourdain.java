@@ -28,8 +28,6 @@ public class Jourdain {
 	private final static double Je = je + Ge2s * Ge2s * Jg;
 	private final static double Jm = jm + Gr2s * Gr2s * Jg;
 
-	private static double CR = 3;
-
 	private static double Jgc() {
 		return Ge2s * Gr2s * Jg;
 	}
@@ -84,13 +82,18 @@ public class Jourdain {
 
 
 	private static double[] acc(double d, double e, double m, double me,
-			double mg) {
+			double mg, boolean brake) {
 		double[] ePmP = ePmP(w(), x(), y(), z(), fa(me, mg), fb(mg));
-		if (CR * Const.planetaryRelation(e + ePmP[0] * d, m + ePmP[1] * d) > e + ePmP[0] * d) {
+		double s = Const.planetaryRelation(e + ePmP[0] * d, m + ePmP[1] * d);
+		if (Const.CR * s > e + ePmP[0] * d) {
 			GearColor.setGearState(GearState.DRIVE);
 			ePmP = ePmP(w2(), x2(), y2(), z2(), fa2(me, mg), fb2());
 		} else {
-			GearColor.setGearState(GearState.RECOIL);
+			if(brake) {
+				GearColor.setGearState(GearState.BRAKE);
+			} else if(s < 0) {
+				GearColor.setGearState(GearState.RECOIL);
+			}
 		}
 		ePmP[0] = e + ePmP[0] * d;
 		ePmP[1] = m + ePmP[1] * d;
@@ -104,17 +107,18 @@ public class Jourdain {
 	 * @param speedRingGear
 	 * @param torquePlanetCarrier
 	 * @param torqueSunGear
+	 * @param brake 
 	 * @return double[] {PlanetCarrierSpeed, RingGearSpeed}
 	 */
 	public static double[] accelerate(double delta, double speedPlanetCarrier,
 			double speedRingGear, double torquePlanetCarrier,
-			double torqueSunGear) {
+			double torqueSunGear, boolean brake) {
 		return acc(delta, speedPlanetCarrier, speedRingGear,
-				torquePlanetCarrier, torqueSunGear);
+				torquePlanetCarrier, torqueSunGear, brake);
 	}
 
 	private static double w2() {
-		return je + jg / CR;
+		return je + jg / Const.CR;
 	}
 
 	private static double x2() {
@@ -122,7 +126,7 @@ public class Jourdain {
 	}
 
 	private static double y2() {
-		return Ge2s - 1 / CR;
+		return Ge2s - 1 / Const.CR;
 	}
 
 	private static double z2() {

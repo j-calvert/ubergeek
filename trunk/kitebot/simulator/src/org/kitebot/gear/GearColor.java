@@ -7,7 +7,8 @@ public enum GearColor {
 	OUTER_RING(Color.blue, Color.white),
 	PLANETS(Color.ORANGE, Color.white),
 	ANNULUS(Color.cyan, Color.white),
-	INTERIOR(Color.LIGHT_GRAY, Color.white);
+	INTERIOR(Color.LIGHT_GRAY, Color.white),
+	BRAKE(Color.darkGray, Color.white);
 	
 	private Color dftFgClr = Color.cyan, dftBgClr = Color.white;
 	public Color fgClr = Color.cyan, bgClr = Color.white;
@@ -23,13 +24,13 @@ public enum GearColor {
 		initColors();
 		switch (state) {
 		case DRIVE:
-			SUN.fgClr = Color.cyan;
-			break;
-		case ACCELERATE:
+			SUN.bgClr = Color.cyan;
 			break;
 		case BRAKE:
+			SUN.bgClr = Color.DARK_GRAY;
 			break;
 		case RECOIL:
+			SUN.bgClr = Color.blue;
 			break;
 		}
 	}
