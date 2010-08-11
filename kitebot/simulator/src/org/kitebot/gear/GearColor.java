@@ -3,10 +3,10 @@ package org.kitebot.gear;
 import java.awt.Color;
 
 public enum GearColor {
-	SUN(Color.green, Color.white),
 	OUTER_RING(Color.blue, Color.white),
-	PLANETS(Color.ORANGE, Color.white),
 	ANNULUS(Color.cyan, Color.white),
+	SUN(Color.green, Color.white),
+	PLANETS(Color.ORANGE, Color.white),
 	INTERIOR(Color.LIGHT_GRAY, Color.white),
 	BRAKE(Color.darkGray, Color.white);
 	

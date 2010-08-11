@@ -24,8 +24,10 @@ public class Kitebot extends Applet {
 	private static final double MAX_LINE_FORCE = 200;
 	private static final double BRAKE_DRAG = 10;
 	private static final double GEN_TORQUE_MAX = 200;
-	private static final long DELTA = 10;
 	private double planetCarrierSpeed = 45, ringGearSpeed = 60;
+	private ScrollingPlots plots;
+	
+	private long clock = System.currentTimeMillis();
 
 	public Kitebot() {
 		super();
@@ -35,7 +37,7 @@ public class Kitebot extends Applet {
 	}
 
 	public void init() {
-		setSize(600, 600);
+		super.init();
 		setLayout(null);
 		setBackground(Color.WHITE);
 		image = createImage(600, 600);
@@ -43,6 +45,7 @@ public class Kitebot extends Applet {
 		windInput = new SliderInput(450, 0, 30, 300, GearColor.SUN);
 		genInput = new SliderInput(500, 0, 30, 300, GearColor.ANNULUS);
 		dial = new Dial();
+		plots = new ScrollingPlots();
 		this.add(planetaryGear);
 		this.add(windInput);
 		this.add(genInput);
@@ -57,6 +60,7 @@ public class Kitebot extends Applet {
 		genInput.paint(gi);
 		planetaryGear.paint(gi);
 		dial.paint(gi);
+		plots.paint(gi);
 		g.drawImage(image, 0, 0, null);
 	}
 
@@ -64,7 +68,10 @@ public class Kitebot extends Applet {
 		paint(g);
 	}
 
-	public void move(long millisec) {
+	public void move() {
+		long now = System.currentTimeMillis();
+		long millisec = now - clock;
+		clock = now;
 		double sunGearTorque = MAX_LINE_FORCE * windInput.getFraction();
 		double delta = millisec * 1d / 1000d;
 		double genTorque = planetCarrierSpeed > 0 ? -GEN_TORQUE_MAX : GEN_TORQUE_MAX;
@@ -81,28 +88,20 @@ public class Kitebot extends Applet {
 		planetCarrierSpeed = accelerate[0];
 		ringGearSpeed = accelerate[1];
 		planetaryGear.move(millisec, planetCarrierSpeed, ringGearSpeed);
-		dial.stateChanged(new ChangeEvent(new Double[]{ringGearSpeed, planetCarrierSpeed, sunGearSpeed}));
-		System.out.println("spd: " + Const.planetaryRelation(planetCarrierSpeed,
-				ringGearSpeed) + " " + planetCarrierSpeed + " " + ringGearSpeed + " trq: " + sunGearTorque + " " + genTorque);
+		ChangeEvent changeEvent = new ChangeEvent(new Datapoint(clock, ringGearSpeed, planetCarrierSpeed, sunGearSpeed));
+		dial.stateChanged(changeEvent);
+		plots.stateChanged(changeEvent);
+		
+//		System.out.println("spd: " + Const.planetaryRelation(planetCarrierSpeed,
+//				ringGearSpeed) + " " + planetCarrierSpeed + " " + ringGearSpeed + " trq: " + sunGearTorque + " " + genTorque);
 	}
 
 	private class Sim extends Thread {
-
 		@Override
 		public void run() {
-			long t1, t0 = System.currentTimeMillis();
 			while (true) {
 				repaint();
-				move(DELTA);
-				t1 = System.currentTimeMillis();
-				try {
-					if (t1 - t0 < DELTA) {
-						Thread.sleep(DELTA - (t1 - t0));
-					}
-				} catch (InterruptedException e) {
-					return;
-				}
-				t0 = t1;
+				move();
 			}
 		}
 	}

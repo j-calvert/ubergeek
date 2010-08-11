@@ -18,7 +18,6 @@ public class SliderInput extends Slider {
 	@Override
 	
 	protected void processMouseEvent(MouseEvent e) {
-		System.out.println(e.getModifiers());
 		if (e.getModifiersEx() == 1024) {
 			lastY = e.getY();
 		}
