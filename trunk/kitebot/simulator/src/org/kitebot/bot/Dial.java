@@ -16,7 +16,6 @@ import javax.swing.event.ChangeListener;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.plot.dial.DialBackground;
 import org.jfree.chart.plot.dial.DialCap;
-import org.jfree.chart.plot.dial.DialLayer;
 import org.jfree.chart.plot.dial.DialPlot;
 import org.jfree.chart.plot.dial.DialTextAnnotation;
 import org.jfree.chart.plot.dial.StandardDialFrame;
@@ -28,27 +27,18 @@ import org.kitebot.gear.GearColor;
 
 public class Dial extends Component implements ChangeListener {
 
-	DefaultValueDataset dataset0;
-	DefaultValueDataset dataset1;
-	DefaultValueDataset dataset2;
-	private JFreeChart jfreechart;
+	private static final int DIAL_COUNT = 3;
 
-	public void stateChanged(ChangeEvent changeevent) {
-		Double[] vals = (Double[]) changeevent.getSource();
-		dataset0.setValue(vals[0]);
-		dataset1.setValue(vals[1]);
-		dataset2.setValue(vals[2]);
-	}
+	private DefaultValueDataset[] datasets = new DefaultValueDataset[DIAL_COUNT];
+	private JFreeChart chart;
 
 	public Dial() {
-		dataset0 = new DefaultValueDataset(10D);
-		dataset1 = new DefaultValueDataset(10D);
-		dataset2 = new DefaultValueDataset(50D);
 		DialPlot dialplot = new DialPlot();
 		dialplot.setView(0.0D, 0.0D, 1.0D, 1.0D);
-		dialplot.setDataset(0, dataset0);
-		dialplot.setDataset(1, dataset1);
-		dialplot.setDataset(2, dataset2);
+		for (int i = 0; i < DIAL_COUNT; i++) {
+			datasets[i] = new DefaultValueDataset(0D);
+			dialplot.setDataset(i, datasets[i]);
+		}
 
 		StandardDialFrame standarddialframe = new StandardDialFrame();
 		standarddialframe.setBackgroundPaint(Color.white);
@@ -59,13 +49,13 @@ public class Dial extends Component implements ChangeListener {
 
 		DialBackground dialbackground = new DialBackground(gradientpaint);
 		dialplot.setBackground(dialbackground);
-		DialTextAnnotation dialtextannotation = new DialTextAnnotation(
-				"RPM");
+		DialTextAnnotation dialtextannotation = new DialTextAnnotation("RPM");
 		dialtextannotation.setFont(new Font("Dialog", 1, 14));
 		dialtextannotation.setRadius(0.7D);
 		dialplot.addLayer(dialtextannotation);
 
-		StandardDialScale standarddialscale = new StandardDialScale(0D, 140D, -120D, -300D, 20D, 4);
+		StandardDialScale standarddialscale = new StandardDialScale(0D, 140D,
+				-120D, -300D, 20D, 4);
 		standarddialscale.setTickRadius(0.93D);
 		standarddialscale.setTickLabelOffset(0.19D);
 		standarddialscale.setTickLabelFont(new Font("Dialog", 0, 14));
@@ -74,8 +64,9 @@ public class Dial extends Component implements ChangeListener {
 		dialplot.addScale(0, standarddialscale);
 		dialplot.mapDatasetToScale(0, 0);
 		dialplot.mapDatasetToScale(1, 0);
-		
-		StandardDialScale standarddialscale1 = new StandardDialScale(-40D, 40D, -120D, -300D, 10D, 4);
+
+		StandardDialScale standarddialscale1 = new StandardDialScale(-40D, 40D,
+				-120D, -300D, 10D, 4);
 		standarddialscale1.setTickRadius(0.5D);
 		standarddialscale1.setTickLabelOffset(0.15D);
 		standarddialscale1.setTickLabelFont(new Font("Dialog", 0, 10));
@@ -85,7 +76,7 @@ public class Dial extends Component implements ChangeListener {
 		standarddialscale1.setTickLabelPaint(GearColor.SUN.fgClr.darker());
 		dialplot.addScale(1, standarddialscale1);
 		dialplot.mapDatasetToScale(2, 1);
-		
+
 		Pin pin = new Pin(2);
 		pin.setRadius(0.45D);
 		pin.setPaint(GearColor.SUN.fgClr);
@@ -104,15 +95,22 @@ public class Dial extends Component implements ChangeListener {
 		DialCap dialcap = new DialCap();
 		dialcap.setRadius(0.1D);
 		dialplot.setCap(dialcap);
-		
-        jfreechart = new JFreeChart(dialplot);
-        jfreechart.setBackgroundPaint(Color.white);
+
+		chart = new JFreeChart(dialplot);
+		chart.setBackgroundPaint(Color.white);
+	}
+
+	@Override
+	public void stateChanged(ChangeEvent changeevent) {
+		Datapoint dp = (Datapoint) changeevent.getSource();
+		for (int i = 0; i < DIAL_COUNT; i++) {
+			datasets[i].setValue(dp.vals[i]);
+		}
 	}
 
 	@Override
 	public void paint(Graphics g) {
-		jfreechart.draw((Graphics2D) g, new Rectangle2D.Float(0,400,200, 200));
+		chart.draw((Graphics2D) g, new Rectangle2D.Float(0, 400, 200, 200));
 	}
-	
-	
+
 }
