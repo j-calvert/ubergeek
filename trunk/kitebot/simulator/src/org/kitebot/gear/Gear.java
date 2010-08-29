@@ -30,11 +30,14 @@ public class Gear extends Component {
     
 
     public void setAngle(double newAngle) {
-        angle = newAngle % (2 * Math.PI);
-        while (angle < 0) angle += 2 * Math.PI;
+        angle = newAngle;
     }
     
-    public int rotateX(double rad, double angle) {
+    public double getAngle() {
+		return angle;
+	}
+
+	public int rotateX(double rad, double angle) {
         return (int) (x + rad * Math.cos(this.angle + angle));
     }
 
@@ -49,7 +52,7 @@ public class Gear extends Component {
         spur[0][3] = x;
         spur[1][3] = y;
 
-        g.setColor(gColor.fgClr);
+        g.setColor(gColor.fg());
         spur[0][2] = rotateX(rSizeL, 0);
         spur[1][2] = rotateY(rSizeL, 0);
         for (theta = 0.0; theta < Math.PI - 0.000001; theta += gearToothAngle) {
@@ -57,7 +60,7 @@ public class Gear extends Component {
         }
         g.fillArc(x - (int) rSizeL, y - (int) rSizeL, (int) (rSizeL * 2), (int) (rSizeL * 2),
                 180 - (int) (angle / (2 * Math.PI) * 360), 180);
-        g.setColor(gColor.bgClr);
+        g.setColor(gColor.bg());
         if (gearCount % 2 == 1) {
             spur[0][0] = rotateX(rSizeL - 1, theta - gearToothAngle / 2);
             spur[1][0] = rotateY(rSizeL - 1, theta - gearToothAngle / 2);

@@ -1,5 +1,6 @@
 package org.kitebot.bot;
 
+import java.awt.Color;
 import java.awt.Component;
 import java.awt.GradientPaint;
 import java.awt.Graphics;
@@ -12,55 +13,63 @@ import org.kitebot.gear.GearColor;
 public class Slider extends Component {
 	private static final long serialVersionUID = 1L;
 
-	protected int width, height, posX, posY, lastY;
-	private boolean inverted = false;
+	protected int width, height, posX, posY;
+	protected double[] lastF;
 
-	private GearColor gColor;
+	private GearColor[] gColor;
+	private Color bgClr = Color.lightGray;
 
 	private Point2D grdA, grdB;
 
-	public Slider(int posX, int posY, int width, int height, GearColor gColor) {
+	public Slider(int posX, int posY, int width, int height, GearColor[] gColor) {
 		this.posX = posX;
 		this.posY = posY;
 		this.width = width;
 		this.height = height;
-		this.lastY = height;
+		this.lastF = new double[gColor.length];
+		this.lastF[0] = 1;
 		this.gColor = gColor;
 		this.grdA = new Point2D.Double(posX, posY);
-		this.grdB = new Point2D.Double(posX + width / 2, posY);
+		this.grdB = new Point2D.Double(posX, posY + height / 2);
 		setBounds(new Rectangle(posX, posY, width, height));
 	}
 
-	public Slider(int posX, int posY, int width, int height, GearColor gColor,
-			boolean inverted) {
-		this(posX, posY, width, height, gColor);
-		this.inverted = inverted;
-	}
-
 	public void paint(Graphics g) {
-		((Graphics2D) g).setPaint(new GradientPaint(grdA,
-				(inverted ? gColor.fgClr : gColor.bgClr).darker(), grdB,
-				(inverted ? gColor.fgClr : gColor.bgClr).brighter(), true));
-		g.fillRect(posX, posY, width, lastY);
-		((Graphics2D) g).setPaint(new GradientPaint(grdA,
-				(inverted ? gColor.bgClr : gColor.fgClr).darker(), grdB,
-				(inverted ? gColor.bgClr : gColor.fgClr).brighter(), true));
-		g.fillRect(posX, posY + lastY, width, height - lastY);
-		g.setColor(GearColor.INTERIOR.fgClr);
-		g.drawRect(posX, posY, width, height);
-	}
+		int lastX = (int) (lastF[0] * width);
+		lastX = boundX(lastX);
 
-	public double getFraction() {
-		return 1d * (inverted ? lastY : height - lastY) / height;
-	}
+		if(this instanceof SliderInput) {
+			g.setColor(Color.BLACK);
+		} else {
+			g.setColor(Color.GRAY);			
+		}
+		g.drawRect(posX - 1, posY -  1, width + 1, height + 1);
 
+		((Graphics2D) g).setPaint(new GradientPaint(grdA,
+				gColor[0].fgClr.darker(), grdB, gColor[0].fgClr.brighter(), true));
+		g.fillRect(posX, posY, lastX, height);
+
+		((Graphics2D) g).setPaint(new GradientPaint(grdA,
+				bgClr.darker(), grdB, bgClr.brighter(), true));
+		g.fillRect(posX + lastX, posY, width - lastX, height);
+	}
+	
 	public void setFraction(double f) {
-		lastY = (int) (inverted ? f * height : (1 - f) * height);
+		lastF[0] = f;
+	}
+	
+	public double[] getLastF() {
+		return lastF;
 	}
 
-	protected void boundY() {
-		lastY = lastY < 0 ? 0 : lastY;
-		lastY = lastY > height ? height : lastY;
+	protected int boundX(int x) {
+		if(x < 0) {
+			return 0;
+		} else if (x > width) {
+			return width;
+		} else {
+			return x;
+		}
 	}
 
 }

@@ -12,8 +12,7 @@ public class PlanetaryGear extends Component {
 	protected PlanetRing planetRing;
 
 	public PlanetaryGear(int x, int y, int sunGearRadius, int numSunGearTeeth,
-			int numPinionGearTeeth, int numRingGearTeeth, int nGearDepth,
-			int numPinionGears) {
+			int numPinionGearTeeth, int numRingGearTeeth, int numPinionGears) {
 
 		if ((numRingGearTeeth + numSunGearTeeth) % numPinionGears != 0)
 			throw new RuntimeException("gear can't contact smoothly");
@@ -55,6 +54,10 @@ public class PlanetaryGear extends Component {
 		ringGear.paint(g);
 		planetRing.paint(g);
 		sunGear.paint(g);
+	}
+	
+	public double getSunAngle() {
+		return sunGear.getAngle();
 	}
 
 }

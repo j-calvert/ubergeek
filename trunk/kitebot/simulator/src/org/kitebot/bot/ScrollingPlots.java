@@ -4,7 +4,7 @@ import java.awt.Color;
 import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
-import java.awt.geom.Rectangle2D;
+import java.awt.geom.Rectangle2D.Float;
 
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -23,14 +23,16 @@ import org.kitebot.gear.GearColor;
 
 public class ScrollingPlots extends Component implements ChangeListener {
 
-    private static final int SUBPLOT_COUNT = 3;
+    private final Float area;
+	private static final int SUBPLOT_COUNT = 3;
     private static final int RESOLUTION = 500;
     private long lastPlot = 0l;
 
     private TimeSeriesCollection[] datasets = new TimeSeriesCollection[SUBPLOT_COUNT];
     private JFreeChart chart;
 
-    public ScrollingPlots() {
+    public ScrollingPlots(Float area) {
+    	this.area = area;
         
         CombinedDomainXYPlot plot = new CombinedDomainXYPlot(new DateAxis("Time"));
         
@@ -71,6 +73,6 @@ public class ScrollingPlots extends Component implements ChangeListener {
 	
 	@Override
 	public void paint(Graphics g) {
-		chart.draw((Graphics2D) g, new Rectangle2D.Float(300, 400, 200, 200));
+		chart.draw((Graphics2D) g, area);
 	}
 }

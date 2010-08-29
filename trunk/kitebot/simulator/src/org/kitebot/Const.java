@@ -8,7 +8,7 @@ public class Const {
 	public final static int Gr2s = -k;
 
 	// Ratio of sun to planet ring when locked
-	public static double CR = 5;
+	public static double CR = 3;
 
 
 	// returns sun gear position/velocity
@@ -22,6 +22,6 @@ public class Const {
 	public final static double jm = 100;
 
 	// Display //
-	public final static int gearDepth = 12;
+	public final static int gearDepth = 6;
 
 }
