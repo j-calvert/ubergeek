@@ -80,18 +80,12 @@ public class Jourdain {
 
 
 	private static double[] acc(double d, double e, double m, double me,
-			double mg, boolean brake) {
+			double mg) {
 		double[] ePmP = ePmP(w(), x(), y(), z(), fa(me, mg), fb(mg));
 		double s = Const.planetaryRelation(e + ePmP[0] * d, m + ePmP[1] * d);
 		if (Const.CR * s > e + ePmP[0] * d) {
 			// Drive mode
 			ePmP = ePmP(w2(), x2(), y2(), z2(), fa2(me, mg), fb2());
-		} else {
-			if(brake) {
-				// Brake Mode
-			} else if(s < 0) {
-				// Recoil mode
-			}
 		}
 		ePmP[0] = e + ePmP[0] * d;
 		ePmP[1] = m + ePmP[1] * d;
@@ -110,9 +104,9 @@ public class Jourdain {
 	 */
 	public static double[] accelerate(double delta, double speedPlanetCarrier,
 			double speedRingGear, double torquePlanetCarrier,
-			double torqueSunGear, boolean brake) {
+			double torqueSunGear) {
 		return acc(delta, speedPlanetCarrier, speedRingGear,
-				torquePlanetCarrier, torqueSunGear, brake);
+				torquePlanetCarrier, torqueSunGear);
 	}
 
 	private static double w2() {
