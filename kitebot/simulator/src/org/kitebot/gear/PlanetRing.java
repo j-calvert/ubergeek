@@ -81,8 +81,8 @@ public class PlanetRing {
 		}
 
 		public void paint(Graphics g) {
-			ann(g, gColor.fgClr, 180);
-			ann(g, gColor.bgClr, 360);
+			ann(g, gColor.fg(), 180);
+			ann(g, gColor.bg(), 360);
 		}
 
 		private void ann(Graphics g, Color c, int startAngle) {
@@ -90,7 +90,7 @@ public class PlanetRing {
 			g.fillArc(x0 - thickness, y0 - thickness, wh + 2 * thickness, wh
 					+ 2 * thickness, startAngle
 					- (int) (angle / (2 * Math.PI) * 360), 180);
-			g.setColor(GearColor.INTERIOR.fgClr);
+			g.setColor(GearColor.INTERIOR.fg());
 			g.fillArc(x0 + thickness, y0 + thickness, wh - 2 * thickness, wh
 					- 2 * thickness, startAngle
 					- (int) (angle / (2 * Math.PI) * 360), 180);

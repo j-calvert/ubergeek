@@ -8,7 +8,7 @@ import org.kitebot.gear.GearColor;
 public class SliderInput extends Slider {
 	private static final long serialVersionUID = 1L;
 
-	public SliderInput(int posX, int posY, int width, int height, GearColor gColor) {
+	public SliderInput(int posX, int posY, int width, int height, GearColor[] gColor) {
 		super(posX, posY, width, height, gColor);
 		enableEvents(MouseEvent.MOUSE_EVENT_MASK);
 		enableEvents(MouseEvent.MOUSE_MOTION_EVENT_MASK);
@@ -19,7 +19,8 @@ public class SliderInput extends Slider {
 	
 	protected void processMouseEvent(MouseEvent e) {
 		if (e.getModifiersEx() == 1024) {
-			lastY = e.getY();
+			int x = boundX(e.getX());
+			lastF[0] = (1.0d * x) / width;
 		}
 	}
 }

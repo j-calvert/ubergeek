@@ -1,8 +1,6 @@
 package org.kitebot.bot;
 
 import org.kitebot.Const;
-import org.kitebot.gear.GearColor;
-import org.kitebot.gear.GearState;
 
 /**
  * Computes acceleration on components of planetary gear drive, using notation
@@ -86,13 +84,13 @@ public class Jourdain {
 		double[] ePmP = ePmP(w(), x(), y(), z(), fa(me, mg), fb(mg));
 		double s = Const.planetaryRelation(e + ePmP[0] * d, m + ePmP[1] * d);
 		if (Const.CR * s > e + ePmP[0] * d) {
-			GearColor.setGearState(GearState.DRIVE);
+			// Drive mode
 			ePmP = ePmP(w2(), x2(), y2(), z2(), fa2(me, mg), fb2());
 		} else {
 			if(brake) {
-				GearColor.setGearState(GearState.BRAKE);
+				// Brake Mode
 			} else if(s < 0) {
-				GearColor.setGearState(GearState.RECOIL);
+				// Recoil mode
 			}
 		}
 		ePmP[0] = e + ePmP[0] * d;

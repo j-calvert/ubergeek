@@ -26,15 +26,15 @@ import org.jfree.chart.plot.dial.DialPointer.Pointer;
 import org.jfree.data.general.DefaultValueDataset;
 import org.kitebot.gear.GearColor;
 
-public class Dial extends Component implements ChangeListener {
+public class AltitudeDial extends Component implements ChangeListener {
 
-	private static final int DIAL_COUNT = 3;
-	private Rectangle2D.Float area;
+	private static final int DIAL_COUNT = 2;
 
+	Rectangle2D.Float area;
 	private DefaultValueDataset[] datasets = new DefaultValueDataset[DIAL_COUNT];
 	private JFreeChart chart;
 
-	public Dial(Float area) {
+	public AltitudeDial(Float area) {
 		this.area = area;
 		DialPlot dialplot = new DialPlot();
 		dialplot.setView(0.0D, 0.0D, 1.0D, 1.0D);
@@ -52,13 +52,13 @@ public class Dial extends Component implements ChangeListener {
 
 		DialBackground dialbackground = new DialBackground(gradientpaint);
 		dialplot.setBackground(dialbackground);
-		DialTextAnnotation dialtextannotation = new DialTextAnnotation("RPM");
-		dialtextannotation.setFont(new Font("Dialog", 1, 14));
+		DialTextAnnotation dialtextannotation = new DialTextAnnotation("Line Length");
+		dialtextannotation.setFont(new Font("Dialog", 1, 8));
 		dialtextannotation.setRadius(0.7D);
 		dialplot.addLayer(dialtextannotation);
 
-		StandardDialScale standarddialscale = new StandardDialScale(0D, 140D,
-				-120D, -300D, 20D, 4);
+		StandardDialScale standarddialscale = new StandardDialScale(0D, 500D,
+				-120D, -300D, 100D, 4);
 		standarddialscale.setTickRadius(0.93D);
 		standarddialscale.setTickLabelOffset(0.19D);
 		standarddialscale.setTickLabelFont(new Font("Dialog", 0, 14));
@@ -66,34 +66,28 @@ public class Dial extends Component implements ChangeListener {
 		standarddialscale.setTickLabelFormatter(new DecimalFormat("#"));
 		dialplot.addScale(0, standarddialscale);
 		dialplot.mapDatasetToScale(0, 0);
-		dialplot.mapDatasetToScale(1, 0);
 
-		StandardDialScale standarddialscale1 = new StandardDialScale(-40D, 40D,
-				-120D, -300D, 10D, 4);
+		StandardDialScale standarddialscale1 = new StandardDialScale(0D, 100D,
+				-270D, -360D, 10D, 10);
 		standarddialscale1.setTickRadius(0.5D);
 		standarddialscale1.setTickLabelOffset(0.15D);
 		standarddialscale1.setTickLabelFont(new Font("Dialog", 0, 10));
-		standarddialscale1.setMajorTickPaint(GearColor.SUN.fgClr.darker());
-		standarddialscale1.setMinorTickPaint(GearColor.SUN.fgClr.darker());
+		standarddialscale1.setMajorTickPaint(Color.black);
+		standarddialscale1.setMinorTickPaint(Color.gray);
 		standarddialscale1.setTickLabelFormatter(new DecimalFormat("#"));
-		standarddialscale1.setTickLabelPaint(GearColor.SUN.fgClr.darker());
+		standarddialscale1.setTickLabelPaint(GearColor.LINE.fgClr);
 		dialplot.addScale(1, standarddialscale1);
-		dialplot.mapDatasetToScale(2, 1);
+		dialplot.mapDatasetToScale(1, 1);
 
-		Pin pin = new Pin(2);
+		Pin pin = new Pin(1);
 		pin.setRadius(0.45D);
-		pin.setPaint(GearColor.SUN.fgClr);
+		pin.setPaint(GearColor.LINE.fg());
 		dialplot.addPointer(pin);
 
 		Pointer pointer = new Pointer(0);
-		pointer.setFillPaint(GearColor.OUTER_RING.fgClr);
-		pointer.setOutlinePaint(GearColor.OUTER_RING.fgClr.darker());
+		pointer.setFillPaint(GearColor.LINE.fg());
+		pointer.setOutlinePaint(GearColor.LINE.bg());
 		dialplot.addPointer(pointer);
-
-		Pointer pointer1 = new Pointer(1);
-		pointer1.setFillPaint(GearColor.ANNULUS.fgClr);
-		pointer1.setOutlinePaint(GearColor.ANNULUS.fgClr.darker());
-		dialplot.addPointer(pointer1);
 
 		DialCap dialcap = new DialCap();
 		dialcap.setRadius(0.1D);
@@ -105,9 +99,9 @@ public class Dial extends Component implements ChangeListener {
 
 	@Override
 	public void stateChanged(ChangeEvent changeevent) {
-		Datapoint dp = (Datapoint) changeevent.getSource();
+		Double d = (Double) changeevent.getSource();
 		for (int i = 0; i < DIAL_COUNT; i++) {
-			datasets[i].setValue(dp.vals[i]);
+			datasets[i].setValue(d);
 		}
 	}
 

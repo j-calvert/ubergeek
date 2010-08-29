@@ -20,20 +20,20 @@ public class OuterRing extends Gear {
 		double rSizeL = rad + Const.gearDepth  / 2;
 		rGearAngle = 2 * Math.PI / gearCount;
 
-		g.setColor(gColor.fgClr);
+		g.setColor(gColor.fg());
 		g.fillArc((int) (x - rSizeL - pixelWidth / 2),
 				(int) (y - rSizeL - pixelWidth / 2),
 				(int) (rSizeL * 2 + pixelWidth),
 				(int) (rSizeL * 2 + pixelWidth), 180 - (int) (angle
 						/ (2 * Math.PI) * 360), 180);
-		g.setColor(gColor.bgClr);
+		g.setColor(gColor.bg());
 		g.fillArc((int) (x - rSizeL - pixelWidth / 2),
 				(int) (y - rSizeL - pixelWidth / 2),
 				(int) (rSizeL * 2 + pixelWidth),
 				(int) (rSizeL * 2 + pixelWidth), 360 - (int) (angle
 						/ (2 * Math.PI) * 360), 180);
 
-		g.setColor(GearColor.INTERIOR.fgClr);
+		g.setColor(GearColor.INTERIOR.fg());
 		g.drawArc((int) (x - rSizeL - pixelWidth / 2),
 				(int) (y - rSizeL - pixelWidth / 2),
 				(int) (rSizeL * 2 + pixelWidth),
@@ -41,7 +41,7 @@ public class OuterRing extends Gear {
 		g.fillArc((int) (x - rSizeL), (int) (y - rSizeL), (int) (rSizeL * 2),
 				(int) (rSizeL * 2), 0, 360);
 
-		g.setColor(gColor.fgClr);
+		g.setColor(gColor.fg());
 		nxX[2] = rotateX(rSizeL, 0);
 		nxY[2] = rotateY(rSizeL, 0);
 		for (rIdx = 0.0; rIdx < Math.PI - 0.000001; rIdx += rGearAngle) {
@@ -56,7 +56,7 @@ public class OuterRing extends Gear {
 			g.fillPolygon(nxX, nxY, 4);
 		}
 
-		g.setColor(gColor.bgClr);
+		g.setColor(gColor.bg());
 		if (gearCount % 2 == 1) {
 			nxX[0] = rotateX(rSizeL, rIdx - rGearAngle / 2);
 			nxY[0] = rotateY(rSizeL, rIdx - rGearAngle / 2);
