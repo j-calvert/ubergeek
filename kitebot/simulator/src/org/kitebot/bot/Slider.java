@@ -35,27 +35,39 @@ public class Slider extends Component {
 	}
 
 	public void paint(Graphics g) {
-		int lastX = (int) (lastF[0] * width);
-		lastX = boundX(lastX);
+		int thisX = (int) (lastF[0] * width);
+		
+		Graphics2D g2 = (Graphics2D) g;
 
 		if(this instanceof SliderInput) {
-			g.setColor(Color.BLACK);
+			g2.setColor(Color.BLACK);
 		} else {
-			g.setColor(Color.GRAY);			
+			g2.setColor(Color.GRAY);			
 		}
-		g.drawRect(posX - 1, posY -  1, width + 1, height + 1);
+		g2.drawRect(posX - 1, posY -  1, width + 1, height + 1);
+		
+		g2.setPaint(Color.white);
+		g2.fillRect(0, posY - 1, posX - 1, height + 1);
+		g2.fillRect(posX + width + 1, posY - 1, 100, height + 1);
 
-		((Graphics2D) g).setPaint(new GradientPaint(grdA,
-				gColor[0].fgClr.darker(), grdB, gColor[0].fgClr.brighter(), true));
-		g.fillRect(posX, posY, lastX, height);
+		g2.setPaint(new GradientPaint(grdA, bgClr.darker(), grdB, bgClr.brighter(), true));
+		g2.fillRect(posX + thisX, posY, width - thisX, height);
 
-		((Graphics2D) g).setPaint(new GradientPaint(grdA,
-				bgClr.darker(), grdB, bgClr.brighter(), true));
-		g.fillRect(posX + lastX, posY, width - lastX, height);
+		int prevX = posX;
+		for(int i = 0; i < lastF.length; i++) {
+			thisX = (int) (lastF[i] * width);
+			g2.setPaint(new GradientPaint(grdA, gColor[i].fgClr.darker(), grdB, gColor[i].fgClr.brighter(), true));
+			if(thisX > 0) {
+				g2.fillRect(prevX, posY + 2 * i, thisX, height - 4 * i);
+			} else {
+				g2.fillRect(prevX + thisX, posY + 2 * i, -thisX, height - 4 * i);				
+			}
+			prevX = thisX + prevX;
+		}
 	}
 	
-	public void setFraction(double f) {
-		lastF[0] = f;
+	public void setFraction(int i, double f) {
+		lastF[i] = f;
 	}
 	
 	public double[] getLastF() {

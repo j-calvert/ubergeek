@@ -23,11 +23,11 @@ public class Kitebot extends Applet {
 	
 	private Image image;
 
-	private static final double MAX_LINE_FORCE = 200;
-	private static final double BRAKE_DRAG = 10;
-	private static final double GEN_TORQUE_MAX = 200;
-	private static final int LINE_RATIO = 1;
-	private double planetCarrierSpeed = 45, ringGearSpeed = 60;
+	private static final double MAX_LINE_FORCE = 100;
+	private static final double BRAKE_DRAG = 50;
+	private static final double WIND_DRAG = .2;
+	private static final double GEN_TORQUE_MAX = 100;
+	private double planetCarrierSpeed = 45, ringGearSpeed = 80;
 	private ScrollingPlots plots;
 	
 	private long clock = System.currentTimeMillis();
@@ -45,8 +45,8 @@ public class Kitebot extends Applet {
 		setBackground(Color.WHITE);
 		image = createImage(600, 600);
 		planetaryGear = new PlanetaryGear(300, 270, 30, 20, 20, 60, 4);
-		windInput = new SliderInput(50, 10, 500, 30, new GearColor[] {GearColor.SUN});
-		gennie = new SliderInput(50, 50, 500, 30, new GearColor[] {GearColor.ANNULUS});
+		windInput = new SliderInput(50, 10, 500, 30, new GearColor[] {GearColor.SUN, GearColor.BRAKE, GearColor.LINE});
+		gennie = new SliderInput(50, 50, 500, 20, new GearColor[] {GearColor.ANNULUS, GearColor.BRAKE});
 		dial = new Dial(new Rectangle2D.Float(50, 100, 150, 150));
 		altitudeDial = new AltitudeDial(new Rectangle2D.Float(400, 100, 150, 150));
 		plots = new ScrollingPlots(new Rectangle2D.Float(50, 400, 500, 200));
@@ -74,6 +74,7 @@ public class Kitebot extends Applet {
 		paint(g);
 	}
 
+	// The big do-it method
 	public void move() {
 		long now = System.currentTimeMillis();
 		long millisec = now - clock;
@@ -84,16 +85,35 @@ public class Kitebot extends Applet {
 		genTorque = genTorque * gennie.getLastF()[0];
 		double sunGearSpeed = Const.planetaryRelation(planetCarrierSpeed, ringGearSpeed);
 		double brakeTorque = 0;
-		boolean brake = false;
-		if(sunGearTorque < -genTorque && sunGearSpeed > 0) {
-			brakeTorque = -BRAKE_DRAG * sunGearSpeed;
-			brake = true;
+		double dragTorque = 0;
+		double genBrakeTorque = 0;
+
+		if(sunGearTorque < -genTorque) {
+			if(sunGearSpeed > .01) {
+				brakeTorque = -BRAKE_DRAG * (sunGearSpeed + .1);
+			} else if(sunGearSpeed > 0) {
+				brakeTorque = -sunGearTorque;
+			}
 		}
+		
+		if(sunGearSpeed < -.0001) {
+			dragTorque = -WIND_DRAG * sunGearSpeed;
+		}
+		
+	// TODO Start here...get this right.
+//		if(2 * sunGearTorque < -genTorque && sunGearSpeed > 0) {
+//			if(planetCarrierSpeed > .01) {
+//				genBrakeTorque = -BRAKE_DRAG * (planetCarrierSpeed + .1);
+//			}
+//		}
 		double[] accelerate = Jourdain.accelerate(delta, planetCarrierSpeed, ringGearSpeed,
-				genTorque, sunGearTorque + brakeTorque, brake);
+				genTorque + genBrakeTorque, sunGearTorque + brakeTorque + dragTorque);
 		planetCarrierSpeed = accelerate[0];
 		ringGearSpeed = accelerate[1];
 		planetaryGear.move(millisec, planetCarrierSpeed, ringGearSpeed);
+		windInput.setFraction(1, brakeTorque / MAX_LINE_FORCE);
+		windInput.setFraction(2, dragTorque / MAX_LINE_FORCE);
+		gennie.setFraction(1, genBrakeTorque / GEN_TORQUE_MAX);
 		ChangeEvent changeEvent = new ChangeEvent(new Datapoint(clock, ringGearSpeed, planetCarrierSpeed, sunGearSpeed));
 		dial.stateChanged(changeEvent);
 		plots.stateChanged(changeEvent);
