@@ -1,0 +1,200 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html>
+<head>
+  <title>CanvasImageDemo4</title>
+  <script src="canvaSVG.js" />
+  <script src="base64.js" />
+  <script src="canvas2bitmap.js" />
+  <script>
+    function loadImage()
+    {
+      var img = new Image();
+      img.onload = function() {
+        copyImageToCanvas(img);
+      };
+      img.setAttribute("src", "http://khm0.google.com/kh/v=66&hl=en-US&x=164&y=563&z=11&token=56234");
+	document.getElementById("convertpngbtn").onclick = function() {
+		convertCanvas("PNG");
+	}
+	document.getElementById("convertbmpbtn").onclick = function() {
+		convertCanvas("BMP");
+	}
+	document.getElementById("convertjpegbtn").onclick = function() {
+		convertCanvas("JPEG");
+	}
+
+    }
+
+
+	function convertCanvas(strType) {
+		if (strType == "PNG")
+			var oImg = Canvas2Image.saveAsPNG(oCanvas, true);
+		if (strType == "BMP")
+			var oImg = Canvas2Image.saveAsBMP(oCanvas, true);
+		if (strType == "JPEG")
+			var oImg = Canvas2Image.saveAsJPEG(oCanvas, true);
+
+		if (!oImg) {
+			alert("Sorry, this browser is not capable of saving " + strType + " files!");
+			return false;
+		}
+
+		oImg.id = "canvasimage";
+
+		document.getElementById("out").innerHTML = ""
+		document.getElementById("out").appendChild(oImg);
+
+		//showDownloadText();
+	}
+
+    function copyImageToCanvas(aImg)
+    {
+      gCanvas = document.getElementById("canvas");
+      var w = aImg.naturalWidth / 4;
+      var h = aImg.naturalHeight / 4;
+      gCanvas.style.width = w + "px";
+      gCanvas.style.height = h + "px";
+      gCanvas.width = w;
+      gCanvas.height = h;
+
+      gCtx = gCanvas.getContext("2d");
+      gCtx.clearRect(0, 0, w, h);
+      gCtx.drawImage(aImg, 0, 0, w, h);
+
+      var container = gCanvas.parentNode;
+      gCanvas2 = document.createElement('canvas');
+      gCanvas2.id = "imageTemp";
+      gCanvas2.width  = w;
+      gCanvas2.height = h;
+      container.appendChild(gCanvas2);
+      gCtx2 = gCanvas2.getContext("2d");
+      gCanvas2.addEventListener("mousedown", onMouseDown, false);
+    }
+
+    var gCanvas = null;
+    var gCanvas2 = null;
+    var gCtx = null;
+    var gCtx2 = null;
+    var gActive = false;
+    var gStartX = 0;
+    var gStartY = 0;
+    var gEndX = -1;
+    var gEndY = -1;
+
+
+    function onMouseDown(aEvent)
+    {
+      if (gActive)
+        return;
+      gActive = true;
+
+      gStartX = aEvent.clientX;
+      gStartY = aEvent.clientY;
+      var e = gCanvas2;
+      while (e)
+      {
+        gStartX -= e.offsetLeft;
+        gStartY -= e.offsetTop;
+        e = e.offsetParent;
+      }
+
+      gCanvas2.addEventListener("mousemove", onMouseMove, false);
+      gCanvas2.addEventListener("mouseup", onMouseUp, false);
+    }
+
+    function onMouseUp(aEvent)
+    {
+      gActive = false;
+      gCtx2.clearRect( 0, 0, gCanvas2.width, gCanvas2.height);
+      gCanvas2.removeEventListener("mousemove", onMouseMove, false);
+      gCanvas2.removeEventListener("mouseup", onMouseUp, false);
+
+      // let's dance
+      unredEye();
+    }
+
+    function onMouseMove(aEvent)
+    {
+      if (!gActive)
+        return;
+
+      gCtx2.clearRect( 0, 0, gCanvas2.width, gCanvas2.height);
+
+      gEndX = aEvent.clientX;
+      gEndY = aEvent.clientY;
+      var e = gCanvas2;
+      while (e)
+      {
+        gEndX -= e.offsetLeft;
+        gEndY -= e.offsetTop;
+        e = e.offsetParent;
+      }
+      gCtx2.strokeRect( Math.min(gStartX, gEndX),
+                       Math.min(gStartY, gEndY),
+                       Math.abs(gEndX - gStartX),
+                       Math.abs(gEndY - gStartY));
+    }
+
+    function unredEye()
+    {
+      var imageData = gCtx.getImageData( Math.min(gStartX, gEndX),
+                                         Math.min(gStartY, gEndY),
+                                         Math.abs(gEndX - gStartX),
+                                         Math.abs(gEndY - gStartY));
+
+      for (var x = 0; x < imageData.width; x++)
+        for (var y = 0; y < imageData.height; y++)
+        {
+          var offset = (y * imageData.width + x) * 4;
+          var r = imageData.data[offset];
+          var g = imageData.data[offset + 1];
+          var b = imageData.data[offset + 2];
+          var redIntensity;
+          if (g || b)
+            redIntensity = 2 * r / (g + b);
+          else if (r)
+            redIntensity = 2;
+          else
+            redIntensity = 0;
+          if (redIntensity > 1.6)
+            if (g || b)
+              imageData.data[offset] = (g + b) / 2;
+            else
+              imageData.data[offset] = 0;
+        }
+      gCtx.putImageData(imageData, Math.min(gStartX, gEndX), Math.min(gStartY, gEndY));
+    }
+  </script>
+
+    <style type="text/css">
+      body { margin: 20px; font-family: arial,verdana,helvetica; background: #fff;}
+      h1 { font-size: 140%; font-weight:normal; color: #036; border-bottom: 1px solid #ccc; }
+      h2 { font-size: 100%; color: #036; }
+      canvas { border: 2px solid #000; float: left; margin-right: 20px; margin-bottom: 20px; cursor: crosshair;}
+      pre { float:left; display:block; background: rgb(238,238,238); border: 1px dashed #666; padding: 15px 20px; margin: 0 0 10px 0; }
+      #container { position: relative; }
+      #imageView {  }
+      #imageTemp { position: absolute; top: 0px; left: 0px; }
+    </style>
+
+
+</head>
+<body onload="loadImage()">
+  <h1>CanvasImageDemo4</h1>
+
+  <div id="container">
+    <canvas id="canvas"/>
+  </div>
+
+  <div id="buttoncontainer" style="display:block;">
+
+<input type="button" id="convertpngbtn" value="Convert to PNG" />
+
+<input type="button" id="convertbmpbtn" value="Convert to BMP" />
+
+<input type="button" id="convertjpegbtn" value="Convert to JPEG" />
+
+</div>
+
+</body>
+</html>

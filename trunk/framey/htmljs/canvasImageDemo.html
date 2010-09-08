@@ -1,0 +1,40 @@
+<html>
+  <head>
+    <title>Canvas drawImage example 2</title>
+    <meta name="DC.creator" content="Kamiel Martinet, http://www.martinet.nl/">
+    <meta name="DC.publisher" content="Mozilla Developer Center, http://developer.mozilla.org">
+    <script type="application/x-javascript">
+    function draw() {
+      var ctx = document.getElementById('canvas').getContext('2d');
+      var img = new Image();
+ var canvasCopy = document.createElement("canvas");
+    var copyContext = canvasCopy.getContext("2d");
+
+    img.onload = function()
+    {
+        var ratio = 1;
+
+        if(img.width > maxWidth)
+            ratio = maxWidth / img.width;
+        else if(img.height > maxHeight)
+            ratio = maxHeight / img.height;
+
+        canvasCopy.width = img.width;
+        canvasCopy.height = img.height;
+        copyContext.drawImage(img, 0, 0);
+
+        canvas.width = img.width * ratio;
+        canvas.height = img.height * ratio;
+        ctx.drawImage(canvasCopy, 0, 0, canvasCopy.width, canvasCopy.height, 0, 0, canvas.width, canvas.height);
+    };
+
+    img.src = reader.result;
+}
+    </script>
+  </head>
+
+  <body onload="draw();">
+      <canvas id="canvas" width="150" height="150"></canvas>
+  </body>
+</html>
+

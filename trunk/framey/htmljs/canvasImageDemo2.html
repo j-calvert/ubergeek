@@ -1,0 +1,173 @@
+<html>
+  <head>
+    <title>Canvas drawImage example 2</title>
+    <meta name="DC.creator" content="Kamiel Martinet, http://www.martinet.nl/">
+    <meta name="DC.publisher" content="Mozilla Developer Center, http://developer.mozilla.org">
+    <script type="application/x-javascript">
+    function draw() {
+      var ctx = document.getElementById('canvas').getContext('2d');
+      var img = new Image();
+      img.src = 'frames.jpg';
+      img.onload = function(){
+        for (i=0;i<4;i++){
+          for (j=0;j<3;j++){
+            ctx.drawImage(img,j*50,i*38,50,380);
+          }
+        }
+      }
+      loadImage();
+    }
+
+
+
+    function loadImage()
+    {
+      var img = new Image();
+      img.onload = function() {
+        copyImageToCanvas(img);
+      };
+      img.setAttribute("src", "frames.jpg");
+    }
+
+    function copyImageToCanvas(aImg)
+    {
+      gCanvas = document.getElementById("canvasToo");
+      var w = aImg.naturalWidth / 4;
+      var h = aImg.naturalHeight / 4;
+      gCanvas.style.width = w + "px";
+      gCanvas.style.height = h + "px";
+      gCanvas.width = w;
+      gCanvas.height = h;
+
+      gCtx = gCanvas.getContext("2d");
+      gCtx.clearRect(0, 0, w, h);
+      gCtx.drawImage(aImg, 0, 0);
+
+      var container = gCanvas.parentNode;
+      gCanvas2 = document.createElement('canvas');
+      gCanvas2.id = "imageTemp";
+      gCanvas2.width  = w;
+      gCanvas2.height = h;
+      container.appendChild(gCanvas2);
+      gCtx2 = gCanvas2.getContext("2d");
+      gCanvas2.addEventListener("mousedown", onMouseDown, false);
+    }
+
+    var gCanvas = null;
+    var gCanvas2 = null;
+    var gCtx = null;
+    var gCtx2 = null;
+    var gActive = false;
+    var gStartX = 0;
+    var gStartY = 0;
+    var gEndX = -1;
+    var gEndY = -1;
+
+
+    function onMouseDown(aEvent)
+    {
+      if (gActive)
+        return;
+      gActive = true;
+
+      gStartX = aEvent.clientX;
+      gStartY = aEvent.clientY;
+      var e = gCanvas2;
+      while (e)
+      {
+        gStartX -= e.offsetLeft;
+        gStartY -= e.offsetTop;
+        e = e.offsetParent;
+      }
+
+      gCanvas2.addEventListener("mousemove", onMouseMove, false);
+      gCanvas2.addEventListener("mouseup", onMouseUp, false);
+    }
+
+    function onMouseUp(aEvent)
+    {
+      gActive = false;
+      gCtx2.clearRect( 0, 0, gCanvas2.width, gCanvas2.height);
+      gCanvas2.removeEventListener("mousemove", onMouseMove, false);
+      gCanvas2.removeEventListener("mouseup", onMouseUp, false);
+
+      // let's dance
+      unredEye();
+    }
+
+    function onMouseMove(aEvent)
+    {
+      if (!gActive)
+        return;
+
+      gCtx2.clearRect( 0, 0, gCanvas2.width, gCanvas2.height);
+
+      gEndX = aEvent.clientX;
+      gEndY = aEvent.clientY;
+      var e = gCanvas2;
+      while (e)
+      {
+        gEndX -= e.offsetLeft;
+        gEndY -= e.offsetTop;
+        e = e.offsetParent;
+      }
+      gCtx2.strokeRect( Math.min(gStartX, gEndX),
+                       Math.min(gStartY, gEndY),
+                       Math.abs(gEndX - gStartX),
+                       Math.abs(gEndY - gStartY));
+    }
+
+    function unredEye()
+    {
+      var imageData = gCtx.getImageData( Math.min(gStartX, gEndX),
+                                         Math.min(gStartY, gEndY),
+                                         Math.abs(gEndX - gStartX),
+                                         Math.abs(gEndY - gStartY));
+
+      for (var x = 0; x < imageData.width; x++)
+        for (var y = 0; y < imageData.height; y++)
+        {
+          var offset = (y * imageData.width + x) * 4;
+          var r = imageData.data[offset];
+          var g = imageData.data[offset + 1];
+          var b = imageData.data[offset + 2];
+          var redIntensity;
+          if (g || b)
+            redIntensity = 2 * r / (g + b);
+          else if (r)
+            redIntensity = 2;
+          else
+            redIntensity = 0;
+          if (redIntensity > 1.6)
+            if (g || b)
+              imageData.data[offset] = (g + b) / 2;
+            else
+              imageData.data[offset] = 0;
+        }
+      gCtx.putImageData(imageData, Math.min(gStartX, gEndX), Math.min(gStartY, gEndY));
+    }
+  </script>
+
+    </script>
+    <style type="text/css">
+      body { margin: 20px; font-family: arial,verdana,helvetica; background: #fff;}
+      h1 { font-size: 140%; font-weight:normal; color: #036; border-bottom: 1px solid #ccc; }
+      h2 { font-size: 100%; color: #036; }
+      canvas { border: 2px solid #000; float: left; margin-right: 20px; margin-bottom: 20px; }
+      pre { float:left; display:block; background: rgb(238,238,238); border: 1px dashed #666; padding: 15px 20px; margin: 0 0 10px 0; }
+    </style>
+  </head>
+
+  <body onload="draw();">
+    <h1>Canvas drawImage example 2</h1>
+    <div>
+      <canvas id="canvas" width="150" height="150"></canvas>
+      <canvas id="canvasToo" width="350" height="350"></canvas>
+
+      <div style="float:left;">
+
+      </div>
+    </div>
+  </body>
+</html>
+
