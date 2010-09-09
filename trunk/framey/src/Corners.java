@@ -1,6 +1,7 @@
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Container;
+import java.awt.GridBagConstraints;
 import java.awt.GridLayout;
 import java.awt.Image;
 import java.awt.MediaTracker;
@@ -9,6 +10,8 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.MemoryImageSource;
 import java.awt.image.PixelGrabber;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.swing.ImageIcon;
 import javax.swing.JApplet;
@@ -19,6 +22,7 @@ import javax.swing.JPanel;
 import javax.swing.JProgressBar;
 import javax.swing.JSlider;
 import javax.swing.SwingUtilities;
+import javax.swing.Timer;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -31,7 +35,19 @@ public class Corners extends JApplet {
 	PixelGrabber grabber = null;
 	int width = 0, height = 0;
 	String fileNames[] = { "ms.png", "bmanpan.jpg", "frames.jpg" };
-	javax.swing.Timer timer;
+	Timer timer;
+
+	private static final GridBagConstraints gbc;
+	private static final int NUM_IMAGES = 4;
+	static {
+		gbc = new GridBagConstraints();
+		gbc.gridx = 0;
+		gbc.gridy = 0;
+		gbc.weightx = 1.0;
+		gbc.weighty = 1.0;
+		gbc.fill = GridBagConstraints.BOTH;
+		gbc.anchor = GridBagConstraints.NORTHWEST;
+	}
 
 	// slider constraints
 	static int TH_MIN = 0;
@@ -40,18 +56,18 @@ public class Corners extends JApplet {
 	double threshold = (double) TH_INIT;
 	int imageNumber = 0;
 	static int progress = 0;
-	static int orig[] = null;
 
 	Image image[] = new Image[fileNames.length];
 	JProgressBar progressBar;
 	JPanel selectionPanel, controlPanel, imagePanel, progressPanel;
-	JLabel origLabel, outputLabel, modeLabel, comboLabel, sigmaLabel,
-			thresholdLabel, processing;
+	JLabel modeLabel, comboLabel, sigmaLabel, thresholdLabel, processingLabel;
+	List<JLabel> imageLabels = new ArrayList<JLabel>();
 	JSlider thresholdSlider;
 	JButton thresholding;
 	JComboBox imSel;
 	static Harris harrisOp;
-	static Image edges;
+
+	// static Image edges;
 
 	// Applet init function
 
@@ -59,10 +75,12 @@ public class Corners extends JApplet {
 		tracker = new MediaTracker(this);
 		Toolkit toolkit = Toolkit.getDefaultToolkit();
 		for (int i = 0; i < fileNames.length; i++) {
-			String imgFile = "/home/jeremyc/workspace/ubergeek/framey/img/" + fileNames[i];
+			String imgFile = "/home/jeremyc/workspace/ubergeek/framey/img/"
+					+ fileNames[i];
 			image[i] = toolkit.getImage(imgFile);
 			image[i] = image[i].getScaledInstance(512, 512, Image.SCALE_FAST);
-//			System.out.println("height: " + image[i].getHeight(new Canvas()));
+			// System.out.println("height: " + image[i].getHeight(new
+			// Canvas()));
 			tracker.addImage(image[i], i);
 		}
 		try {
@@ -88,49 +106,43 @@ public class Corners extends JApplet {
 		modeLabel = new JLabel(("K = " + ((double) TH_INIT / 1000)));
 		modeLabel.setHorizontalAlignment(JLabel.CENTER);
 		controlPanel.add(modeLabel);
-		processing = new JLabel("Processing...");
-		processing.setHorizontalAlignment(JLabel.LEFT);
+		processingLabel = new JLabel("Processing...");
+		processingLabel.setHorizontalAlignment(JLabel.LEFT);
 		progressBar = new JProgressBar(0, 100);
 		progressBar.setValue(0);
 		progressBar.setStringPainted(true); // get space for the string
 		progressBar.setString(""); // but don't paint it
-		progressPanel.add(processing);
+		progressPanel.add(processingLabel);
 		progressPanel.add(progressBar);
 		width = image[imageNumber].getWidth(null);
 		height = image[imageNumber].getHeight(null);
+		System.out.println("(w, h) = (" + width + ", " + height + ")");
 		imSel = new JComboBox(fileNames);
 		imageNumber = imSel.getSelectedIndex();
-		imSel.addActionListener(
-
-		new ActionListener() {
+		imSel.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				imageNumber = imSel.getSelectedIndex();
-				origLabel.setIcon(new ImageIcon(image[imageNumber]));
+				imageLabels.get(0).setIcon(new ImageIcon(image[imageNumber]));
 				processImage();
 			}
 		});
 
 		controlPanel.add(imSel, BorderLayout.PAGE_START);
-		timer = new javax.swing.Timer(100, new ActionListener() {
-
+		timer = new Timer(100, new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				// System.out.println("Got value: " + harrisOp.getProgress());
 				progressBar.setValue(harrisOp.getProgress());
 			}
 		});
 
-		origLabel = new JLabel("Original Image", new ImageIcon(
-				image[imageNumber]), JLabel.CENTER);
-		origLabel.setVerticalTextPosition(JLabel.BOTTOM);
-		origLabel.setHorizontalTextPosition(JLabel.CENTER);
-		origLabel.setForeground(Color.blue);
-		imagePanel.add(origLabel);
-		outputLabel = new JLabel("Corner Detected", new ImageIcon(
-				image[imageNumber]), JLabel.CENTER);
-		outputLabel.setVerticalTextPosition(JLabel.BOTTOM);
-		outputLabel.setHorizontalTextPosition(JLabel.CENTER);
-		outputLabel.setForeground(Color.blue);
-		imagePanel.add(outputLabel);
+		for (int i = 0; i < NUM_IMAGES; i++) {
+			JLabel imgLabel = new JLabel("Image " + i, new ImageIcon(
+					image[imageNumber]), JLabel.CENTER);
+			imgLabel.setVerticalTextPosition(JLabel.BOTTOM);
+			imgLabel.setHorizontalTextPosition(JLabel.CENTER);
+			imgLabel.setForeground(Color.blue);
+			imageLabels.add(imgLabel);
+			imagePanel.add(imgLabel, gbc);
+		}
 		thresholdSlider = new JSlider(JSlider.HORIZONTAL, TH_MIN, TH_MAX,
 				TH_INIT);
 		thresholdSlider.addChangeListener(new thresholdListener());
@@ -162,19 +174,18 @@ public class Corners extends JApplet {
 	}
 
 	private void processImage() {
-		orig = new int[width * height];
+		final int pixels[] = new int[width * height];
 		PixelGrabber grabber = new PixelGrabber(image[imageNumber], 0, 0,
-				width, height, orig, 0, width);
+				width, height, pixels, 0, width);
 		try {
 			grabber.grabPixels();
-		} catch (InterruptedException e2) {
-			System.out.println("error: " + e2);
+		} catch (InterruptedException e) {
+			throw new RuntimeException(e);
 		}
 		progressBar.setMaximum(width - 4);
-		processing.setText("Processing...");
+		processingLabel.setText("Processing...");
 		thresholdSlider.setEnabled(false);
 		imSel.setEnabled(false);
-		// edgedetector = new sobel();
 		harrisOp = new Harris();
 		timer.start();
 
@@ -184,17 +195,17 @@ public class Corners extends JApplet {
 				// orig=edgedetector.process();
 				// edges = image[imageNumber];//createImage(new
 				// MemoryImageSource(width, height, orig, 0, width));
-				harrisOp.init(orig, width, height, threshold / 1000);
-				orig = harrisOp.process();
+				harrisOp.init(pixels, width, height, threshold / 1000);
+				int[] morePixels = harrisOp.process();
 				final Image output = createImage(new MemoryImageSource(width,
-						height, orig, 0, width));
+						height, morePixels, 0, width));
 				SwingUtilities.invokeLater(new Runnable() {
 					public void run() {
-						outputLabel.setIcon(new ImageIcon(output));
+						imageLabels.get(1).setIcon(new ImageIcon(output));
 						// origLabel.setIcon(new ImageIcon(createImage(new
 						// MemoryImageSource(width, height,
 						// edgedetector.process(), 0, width))));
-						processing.setText("Done");
+						processingLabel.setText("Done");
 						thresholdSlider.setEnabled(true);
 						imSel.setEnabled(true);
 					}
