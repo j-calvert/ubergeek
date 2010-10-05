@@ -99,4 +99,8 @@ public class PlanetRing {
 
 	}
 
+	public double getAngle() {
+		return planetCarrier.getAngle();
+	}
+
 }
