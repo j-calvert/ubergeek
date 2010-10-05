@@ -1,4 +1,4 @@
-package org.kitebot.bot;
+package org.kitebot.bot.unused;
 
 import java.awt.Color;
 import java.awt.Component;

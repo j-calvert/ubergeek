@@ -1,8 +1,8 @@
-package org.kitebot.bot;
+package org.kitebot.bot.unused;
 
 public class Datapoint {
-	long clock;
-	double[] vals = new double[3];
+	public final long clock;
+	public final double[] vals = new double[3];
 	
 	public Datapoint(long clock, double v0, double v1, double v2) {
 		this.clock = clock;

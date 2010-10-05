@@ -59,5 +59,9 @@ public class PlanetaryGear extends Component {
 	public double getSunAngle() {
 		return sunGear.getAngle();
 	}
+	
+	public double getCarrierAngle() {
+		return planetRing.getAngle();
+	}
 
 }
