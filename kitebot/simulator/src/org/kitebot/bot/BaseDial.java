@@ -21,7 +21,7 @@ import org.jfree.data.general.DefaultValueDataset;
 public abstract class BaseDial extends Component implements ChangeListener {
 
 	private final Rectangle2D.Float area;
-	private final DefaultValueDataset[] datasets;
+	protected final DefaultValueDataset[] datasets;
 	private final JFreeChart chart;
 
 	public BaseDial(Float area, int dialCount) {
