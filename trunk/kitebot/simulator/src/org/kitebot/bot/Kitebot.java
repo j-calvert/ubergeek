@@ -10,6 +10,7 @@ import java.awt.geom.Rectangle2D;
 import javax.swing.event.ChangeEvent;
 
 import org.kitebot.Const;
+import org.kitebot.bot.unused.ScrollingPlots;
 import org.kitebot.gear.GearColor;
 import org.kitebot.gear.PlanetaryGear;
 
@@ -17,8 +18,9 @@ public class Kitebot extends Applet {
 	private PlanetaryGear planetaryGear;
 	private SliderInput windInput;
 	private Slider gennie;
-	private VelocityDial dial;
-	private PositionDial altitudeDial;
+	private AccelerationDial accelerationDial;
+	private VelocityDial velocityDial;
+	private PositionDial positionDial;
 
 	private Image image;
 
@@ -27,7 +29,7 @@ public class Kitebot extends Applet {
 	private static final double WIND_DRAG = .2;
 	private static final double GEN_TORQUE_MAX = 100;
 	private double planetCarrierSpeed = 45, ringGearSpeed = 80;
-	// private ScrollingPlots plots;
+	private ScrollingPlots plots;
 
 	private long clock = System.currentTimeMillis();
 
@@ -40,23 +42,37 @@ public class Kitebot extends Applet {
 
 	public void init() {
 		super.init();
+		init(120);
+	}
+
+	private void init(int expnsn) {
 		setLayout(null);
 		setBackground(Color.WHITE);
 		image = createImage(600, 600);
-		planetaryGear = new PlanetaryGear(300, 270, 30, 20, 20, 60, 4);
-		windInput = new SliderInput(50, 10, 500, 30, new GearColor[] {
-				GearColor.SUN, GearColor.BRAKE, GearColor.LINE });
-		gennie = new SliderInput(50, 50, 500, 20, new GearColor[] {
-				GearColor.ANNULUS, GearColor.BRAKE });
-		dial = new VelocityDial(new Rectangle2D.Float(50, 100, 150, 150));
-		altitudeDial = new PositionDial(new Rectangle2D.Float(400, 100, 150,
-				150));
-		// plots = new ScrollingPlots(new Rectangle2D.Float(50, 400, 500, 200));
+		planetaryGear = new PlanetaryGear(245 * expnsn / 100,
+				175 * expnsn / 100, 17 * expnsn / 100, 20, 20, 60, 4);
+		windInput = new SliderInput(50 * expnsn / 100, 10 * expnsn / 100,
+				500 * expnsn / 100, 30 * expnsn / 100, new GearColor[] {
+						GearColor.SUN, GearColor.BRAKE, GearColor.LINE });
+		gennie = new SliderInput(50 * expnsn / 100, 50 * expnsn / 100,
+				500 * expnsn / 100, 20, new GearColor[] { GearColor.ANNULUS,
+						GearColor.BRAKE });
+		accelerationDial = new AccelerationDial(new Rectangle2D.Float(
+				10 * expnsn / 100, 100 * expnsn / 100, 150 * expnsn / 100,
+				150 * expnsn / 100));
+		velocityDial = new VelocityDial(new Rectangle2D.Float(
+				10 * expnsn / 100, 260 * expnsn / 100, 150 * expnsn / 100,
+				150 * expnsn / 100));
+		positionDial = new PositionDial(new Rectangle2D.Float(
+				170 * expnsn / 100, 260 * expnsn / 100, 150 * expnsn / 100,
+				150 * expnsn / 100));
+		plots = new ScrollingPlots(new Rectangle2D.Float(50 * expnsn / 100,
+				400 * expnsn / 100, 500 * expnsn / 100, 200 * expnsn / 100));
 		this.add(planetaryGear);
 		this.add(windInput);
 		this.add(gennie);
-		this.add(dial);
-		this.add(altitudeDial);
+		this.add(velocityDial);
+		this.add(positionDial);
 		new Sim().start();
 		setSize(600, 600);
 	}
@@ -65,9 +81,10 @@ public class Kitebot extends Applet {
 		Graphics gi = image.getGraphics();
 		windInput.paint(gi);
 		gennie.paint(gi);
-		dial.paint(gi);
-		altitudeDial.paint(gi);
-		// plots.paint(gi);
+		accelerationDial.paint(gi);
+		velocityDial.paint(gi);
+		positionDial.paint(gi);
+		plots.paint(gi);
 		planetaryGear.paint(gi);
 		g.drawImage(image, 0, 0, null);
 	}
@@ -77,7 +94,7 @@ public class Kitebot extends Applet {
 	}
 
 	// The big do-it method
-	public void move() {
+	public long move() {
 		long now = System.currentTimeMillis();
 		long millisec = now - clock;
 		clock = now;
@@ -119,16 +136,19 @@ public class Kitebot extends Applet {
 		windInput.setFraction(1, brakeTorque / MAX_LINE_FORCE);
 		windInput.setFraction(2, dragTorque / MAX_LINE_FORCE);
 		gennie.setFraction(1, genBrakeTorque / GEN_TORQUE_MAX);
-		dial.stateChanged(new ChangeEvent(new double[] { ringGearSpeed,
-				planetCarrierSpeed, sunGearSpeed }));
-		// plots.stateChanged(changeEvent);
-		altitudeDial.stateChanged(new ChangeEvent(new double[] {
+		ChangeEvent changeevent = new ChangeEvent(new double[] { ringGearSpeed,
+				planetCarrierSpeed, sunGearSpeed });
+		accelerationDial.stateChanged(changeevent);
+		velocityDial.stateChanged(changeevent);
+		plots.stateChanged(changeevent);
+		positionDial.stateChanged(new ChangeEvent(new double[] {
 				planetaryGear.getSunAngle(), planetaryGear.getSunAngle() }));
 
 		// System.out.println("spd: " +
 		// Const.planetaryRelation(planetCarrierSpeed,
 		// ringGearSpeed) + " " + planetCarrierSpeed + " " + ringGearSpeed +
 		// " trq: " + sunGearTorque + " " + genTorque);
+		return System.currentTimeMillis() - now;
 	}
 
 	private class Sim extends Thread {
@@ -136,7 +156,11 @@ public class Kitebot extends Applet {
 		public void run() {
 			while (true) {
 				repaint();
-				move();
+				try {
+					Thread.sleep(Math.max(0, 50 - move()));
+				} catch (InterruptedException e) {
+					throw new RuntimeException(e);
+				}
 			}
 		}
 	}
