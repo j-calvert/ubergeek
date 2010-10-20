@@ -1,0 +1,42 @@
+CNF conversion took 0 secs
+Creating query predicates that are specified on command line...
+Set hard weight to 10
+creating mrf...
+number of grounded predicates = 141
+number of grounded clauses = 497
+Time taken to construct MRF = 0.03 secs
+
+In the beginning: 
+Number of false clauses: 136
+Cost of false clauses: 1360
+Target cost: 0
+In the end: 
+Lowest num. of false clauses: 2
+Lowest cost of false clauses: 20
+Number of flips: 500000
+total time taken = 0.53 secs
+
+*********** results *************
+
+Drive(City0,City1,T0,T1) 
+Drive(City1,City0,T1,T2) 
+Visited(City0,T2) 
+Visited(City0,T3) 
+Visited(City0,T4) 
+Visited(City1,T1) 
+Visited(City1,T2) 
+Visited(City1,T3) 
+Visited(City1,T4) 
+In(City0,T1) 
+In(City0,T2) 
+In(City0,T3) 
+In(City1,T1) 
+Buy(Prod0,City0,T1) 
+Buy(Prod0,City0,T4) 
+Buy(Prod1,City1,T1) 
+Have(Prod1,T3) 
+Have(Prod1,T4) 
+
+*********************************
+Failure after 100 attempt(s)
+*********************************

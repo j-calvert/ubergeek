@@ -1,0 +1,67 @@
+REQUIREMENTS (for running it)
+
+Need to have ant, java (<=1.5) and bash on a *nix machine, with 256M of available memory.
+
+BUILDING
+
+In the directory where this README is found, do the following, though this is not actually necessary as
+the class files are already present in the build directory.
+
+> ant
+
+RUNNING
+
+> run.sh <trainingFile> <testingFile> <numNeighbors>
+
+OVERVIEW
+
+The code is standalone, depending on no external libraries.
+
+The class with the main method that is run by run.sh is PredictorTester.java.  It creates a Populator,
+which loads the training file's data into memory via the MemStore class.  An instance of MemStore
+is returned, which is used to construct an instance of a Predictor.  Predictor is an abstract base
+class that is extended to a concrete implementation that defines the predict(int userId, int movieId)
+method.  The method returns an array of predictions, one for each nearest neighbor computation for
+the N nearest neighbors where N = 1 ... <numNeighbors> (as defined above).
+
+The PredictorTester class has a static class PredictorHarness that is used to accumulate error rates
+and output the results to standard out.
+
+The duality of movieID and userID was deliberately maintained (there is no apriori distinction between
+the two in the code) so that nearest neighbor calculations could be done along both dimensions.  Taking
+advantage of this duality is at the foundation on the improvements made to the basic nearest neighbor
+algorithm.
+
+DETAILED DESCRIPTION
+
+For a more detailed description of the system components, please see the javadocs, which can be viewed
+by opening the file ./doc/index.html in a browser.
+
+FILES AND DIRECTORY DESCRIPTIONS
+
+build
+	The destination of the .class files compiled by javac
+
+build.xml
+	The ant build script
+
+.classpath
+	The eclipse metadata file holding classpath information
+
+doc
+	The javadoc directory
+
+.project
+	The eclipse metadata file holding project information
+
+README
+	This file
+
+run.sh
+	The bash script to run the prediction algorithm
+
+src
+	The source files for the project
+
+Writeup.pdf
+	The report for this project

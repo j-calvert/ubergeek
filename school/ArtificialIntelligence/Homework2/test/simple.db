@@ -1,0 +1,42 @@
+// Successor predicates
+SuccTime(T0, T1)
+SuccTime(T1, T2)
+
+// Initial state
+In(City0,T0)
+!In(City1,T0)
+!Visited(City0,T0)
+!Visited(City1,T0)
+At(City1,Prod1)
+
+// Goal state
+In(City1,T1)
+
+
+/********** Expected results ***************
+// there are many solutions, but all should contain the first three lines
+Drive(City0,City1,T0,T1)
+Visited(City1,T1)	
+Visited(City1,T2)
+In(City1,T2)
+*/
+
+/**********  Walksat output **********
+// You should get roughly the same order of magnitude number of clauses
+CNF conversion took 0 secs
+Creating query predicates that are specified on command line...
+Set hard weight to 10
+creating mrf...
+number of grounded predicates = 52
+number of grounded clauses = 151
+Time taken to construct MRF = 0.01 secs
+
+In the beginning: 
+Number of false clauses: 45
+Cost of false clauses: 450
+Target cost: 0
+In the end: 
+Lowest num. of false clauses: 0
+Lowest cost of false clauses: 0
+Number of flips: 26
+*/

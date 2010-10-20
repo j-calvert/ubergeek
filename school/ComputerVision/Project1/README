@@ -1,0 +1,13 @@
+To run the clusterer, cd into the bin directory, and then type:
+java edu/washington/csep576/Clusterer
+for the usage.
+
+Usage:
+java com/washington/csep576/Clusterer <inputFile> [<maxClusters> [<initialClusters> [options]]]
+where: inputFile is the PPM input file...the output file will be placed in the same directory with the string 'mask' inserted just before the suffix
+       maxClusters is an integer number of max clusters, default 10
+       initialClusters is an integer number of initial clusters (default maxClusters)
+ and options can be 
+       'converted' indicating that image should be converted to YIQ space for clustering
+       'selective' indicating that seeds should be picked so they're far from one another
+

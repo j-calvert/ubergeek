@@ -1,0 +1,64 @@
+//**************** Predicates *******************************************
+// you are in some city at some time
+In(city, time)
+
+// you have visited some city by some time
+Visited(city, time)
+
+// you have some product in your truck at some time
+Have(product, time)
+
+// some product at some city
+At(city, product)
+
+// buying product at some city at some time 
+Buy(product, city, time)
+
+// driving from some city at some time and arriving in some city at some time
+// Drive(c1,c2,t1,t2) means leaving c1 at t1 and arriving in c2 at t2
+Drive(city, city, time, time)
+
+// successor function of time
+// SuccTime(t1,t2) means time step t2 comes right after time step t1
+// for example, SuccTime(t1,t2) ^ SuccTime(t2,t3) => !SuccTime(t1,t3)
+SuccTime(time, time)
+
+//************************** RULES ***********************************
+// Initially at time step 0, the evidence db file explicitly says you are in one city and no city has been visited. 
+
+// (1) Once a city has been visited by a time step, it is always visited in the future. 
+Visited(c, t1) ^ SuccTime(t1, t2) => Visited(c, t2).
+
+// (2) A city has been visited by a time step, either because it had been already visited by the last time step or because you drove to the city last time step. 
+Visited(c1, t1) ^ SuccTime(t0, t1) => (EXIST c0 Drive(c0, c1, t0, t1)) v Visited(c1, t0).
+
+// (3) You are always in exactly one city at a time step.
+(EXIST c In(c, t)) ^ (In(c1, t1) ^ In(c2, t1) => (c1 = c2)).
+
+// (4) You are in a city at a time step that is not the start time, either because you were already in the city last time step or because you drove to the city last time step. 
+In(c1, t1) ^ SuccTime(t0, t1) => (EXIST c0 Drive(c0, c1, t0, t1) v In(c1, t0)).
+
+// (5) You can drive only to a city not visited before, and it becomes visited as soon as you finish driving at the next time step.
+Drive(c0, c1, t0, t1) => SuccTime(t0, t1) ^ In(c1, t1) ^ In(c0, t0) ^ !Visited(c1, t0) ^ Visited(c1, t1).
+
+// (6) You can drive only from a city to a different city; at the current time step you are in one city and at the next time step you are in the other. 
+Drive(c0, c1, t0, t1) => SuccTime(t0, t1) ^ !(c0=c1) ^ In(c0, t0) ^ In(c1, t1).
+
+// (7) If no driving happens, you stay where you are.
+In(c0, t0) ^ In(c1, t1) ^ SuccTime(t0, t1) ^ !(c0 = c1) => Drive(c0, c1, t0, t1).
+
+// (8) At a time step you are in a city that has some product you have, only if you bought that product in the same city last time step. 
+Have(p, t) ^ At(c, p) ^ In(c, t) ^ SuccTime(t0, t) => In(c, t0) ^ Buy(p, c, t0).
+
+// (9) You never buy a product that you already have, and once you buy it you will have it next time step.
+(Buy(p, c, t) => !Have(p, t)) ^ (Buy(p, c, t) ^ SuccTime(t, t1) => Have(p, t1)).
+
+// (10) You can buy a product at a city only when you there and the city has that product (assume after selling it to you, the city still has some amount of the product).
+Buy(p, c, t) => At(c, p) ^ In(c, t).
+
+// (11) Once you have a product, you have it forever.
+Have(p, t) ^ SuccTime(t, t1) => Have(p, t1).
+
+// (12) You have a product at a time step that is not the start time, either because you already had it last time step or you bought it last time step.
+SuccTime(t0, t) ^ Have(p, t) => Have(p, t0) v (EXIST c Buy(p, c, t0)).
+

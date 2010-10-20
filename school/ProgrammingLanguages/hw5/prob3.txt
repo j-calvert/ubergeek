@@ -1,0 +1,15 @@
+a)  We can never be sure that shared_do1 will unblock before a later call to 
+exclusive_do1 completes, because each start_ch message is recieved in a choose, 
+which is non-deterministic.  If there are several of each of share_ch, 
+exclusive_ch and release_ch messages waiting, several selections of the latter 
+two may occur before a share_ch message whose send was initiated earlier in 
+clock time.  If this is the case, a exclusive_do1 will start and finish before 
+the shared_do1 is unblocked.
+
+b)  In this implementation, our use of choose is limited to the case where 
+selock2 is in the "unlocked" state, so if we can ensure that selock is in the 
+"shared" state when shared_do2 blocks, we can be sure that it will complete 
+before any subsequent call to exclusive_do2.  This amounts to the following 
+condition, a call f() to shared_do2 is blocked at the time we make our call to 
+shared_do2, and no call to exclusive_do2 has taken place between the time f() 
+was called and when we make our call.

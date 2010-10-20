@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry excluding=".svn/|edu/.svn/|edu/washington/.svn/|edu/washington/csep576/.svn/" kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/je-3.2.74.jar"/>
+	<classpathentry kind="lib" path="lib/webserver.jar" sourcepath="WebServer"/>
+	<classpathentry kind="lib" path="lib/servlet.jar" sourcepath="WebServer-133a.zip"/>
+	<classpathentry kind="output" path="build"/>
+</classpath>
