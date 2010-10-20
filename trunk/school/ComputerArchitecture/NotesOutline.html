@@ -1,0 +1,3869 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html>
+<head>
+  <script language="javascript1.2">
+<!--
+
+/***************************************************************************************
+        Nested list collapsing script written by Mark Wilton-Jones - 21/11/2003
+Version 2.3.0 - this script takes existing HTML nested UL or OL lists, and collapses them
+            Updated 13/02/2004 to allow links in root of expanding branch
+                  Updated 09/09/2004 to allow state to be saved
+          Updated 07/10/2004 to allow page address links to be highlighted
+Updated 28/11/2004 to allow you to force expand/collapse links to use just the extraHTML
+Updated 23/09/2006 to add expandCollapseAll and to allow selfLink to locate custom links
+****************************************************************************************/
+
+	
+	var openLists = [], oIcount = 0;
+function compactMenu(oID,oAutoCol,oPlMn,oMinimalLink) {
+        if( !document.getElementsByTagName || !document.childNodes || !document.createElement ) { return; }
+        var baseElement = document.getElementById( oID ); if( !baseElement ) { return; }
+        compactChildren( baseElement, 0, oID, oAutoCol, oPlMn, baseElement.tagName.toUpperCase(), oMinimalLink && oPlMn );
+}
+function compactChildren( oOb, oLev, oBsID, oCol, oPM, oT, oML ) {
+        if( !oLev ) { oBsID = escape(oBsID); if( oCol ) { openLists[oBsID] = []; } }
+        for( var x = 0, y = oOb.childNodes; x < y.length; x++ ) { if( y[x].tagName ) {
+                //for each immediate LI child
+                var theNextUL = y[x].getElementsByTagName( oT )[0];
+                if( theNextUL ) {
+                        //collapse the first UL/OL child
+                        theNextUL.style.display = 'none';
+                        //create a link for expanding/collapsing
+                        var newLink = document.createElement('A');
+                        newLink.setAttribute( 'href', '#' );
+                        newLink.onclick = new Function( 'clickSmack(this,' + oLev + ',\'' + oBsID + '\',' + oCol + ',\'' + escape(oT) + '\');return false;' );
+                        //wrap everything upto the child U/OL in the link
+                        if( oML ) { var theHTML = ''; } else {
+                                var theT = y[x].innerHTML.toUpperCase().indexOf('<'+oT);
+                                var theA = y[x].innerHTML.toUpperCase().indexOf('<A');
+                                var theHTML = y[x].innerHTML.substr(0, ( theA + 1 && theA < theT ) ? theA : theT );
+                                while( !y[x].childNodes[0].tagName || ( y[x].childNodes[0].tagName.toUpperCase() != oT && y[x].childNodes[0].tagName.toUpperCase() != 'A' ) ) {
+                                        y[x].removeChild( y[x].childNodes[0] ); }
+                        }
+                        y[x].insertBefore(newLink,y[x].childNodes[0]);
+                        y[x].childNodes[0].innerHTML = oPM + theHTML.replace(/^\s*|\s*$/g,'');
+                        theNextUL.MWJuniqueID = oIcount++;
+                        compactChildren( theNextUL, oLev + 1, oBsID, oCol, oPM, oT, oML );
+} } } }
+function clickSmack( oThisOb, oLevel, oBsID, oCol, oT ) {
+        if( oThisOb.blur ) { oThisOb.blur(); }
+        oThisOb = oThisOb.parentNode.getElementsByTagName( unescape(oT) )[0];
+        if( oCol ) {
+                for( var x = openLists[oBsID].length - 1; x >= oLevel; x-=1 ) { if( openLists[oBsID][x] ) {
+                        openLists[oBsID][x].style.display = 'none'; if( oLevel != x ) { openLists[oBsID][x] = null; }
+                } }
+                if( oThisOb == openLists[oBsID][oLevel] ) { openLists[oBsID][oLevel] = null; }
+                else { oThisOb.style.display = 'block'; openLists[oBsID][oLevel] = oThisOb; }
+        } else { oThisOb.style.display = ( oThisOb.style.display == 'block' ) ? 'none' : 'block'; }
+}
+function stateToFromStr(oID,oFStr) {
+        if( !document.getElementsByTagName || !document.childNodes || !document.createElement ) { return ''; }
+        var baseElement = document.getElementById( oID ); if( !baseElement ) { return ''; }
+        if( !oFStr && typeof(oFStr) != 'undefined' ) { return ''; } if( oFStr ) { oFStr = oFStr.split(':'); }
+        for( var oStr = '', l = baseElement.getElementsByTagName(baseElement.tagName), x = 0; l[x]; x++ ) {
+                if( oFStr && MWJisInTheArray( l[x].MWJuniqueID, oFStr ) && l[x].style.display == 'none' ) { l[x].parentNode.getElementsByTagName('a')[0].onclick(); }
+                else if( l[x].style.display != 'none' ) { oStr += (oStr?':':'') + l[x].MWJuniqueID; }
+        }
+        return oStr;
+}
+function MWJisInTheArray(oNeed,oHay) { for( var i = 0; i < oHay.length; i++ ) { if( oNeed == oHay[i] ) { return true; } } return false; }
+function selfLink(oRootElement,oClass,oExpand,oLink) {
+        var tmpLink;
+        if(!document.getElementsByTagName||!document.childNodes) { return; }
+        oRootElement = document.getElementById(oRootElement);
+        if( oLink ) {
+                tmpLink = document.createElement('a');
+                tmpLink.setAttribute('href',oLink);
+        }
+        for( var x = 0, y = oRootElement.getElementsByTagName('a'); y[x]; x++ ) {
+                if( y[x].getAttribute('href') && !y[x].href.match(/#$/) && getRealAddress(y[x]) == getRealAddress(oLink?tmpLink:location) ) {
+                        y[x].className = (y[x].className?(y[x].className+' '):'') + oClass;
+                        if( oExpand ) {
+                                oExpand = false;
+                                for( var oEl = y[x].parentNode, ulStr = ''; oEl != oRootElement && oEl != document.body; oEl = oEl.parentNode ) {
+                                        if( oEl.tagName && oEl.tagName == oRootElement.tagName ) { ulStr = oEl.MWJuniqueID + (ulStr?(':'+ulStr):''); } }
+                                stateToFromStr(oRootElement.id,ulStr);
+} } } }
+function getRealAddress(oOb) { return oOb.protocol + ( ( oOb.protocol.indexOf( ':' ) + 1 ) ? '' : ':' ) + oOb.hostname + ( ( typeof(oOb.pathname) == typeof(' ') && oOb.pathname.indexOf('/') != 0 ) ? '/' : '' ) + oOb.pathname + oOb.search; }
+function expandCollapseAll(oElID,oState) {
+        if(!document.getElementsByTagName||!document.childNodes) { return; }
+        var oEl = document.getElementById(oElID);
+        var oT = oEl.tagName;
+        var oULs = oEl.getElementsByTagName(oT);
+        for( var i = 0, oLnk; i < oULs.length; i++ ) {
+                if( typeof(oULs[i].MWJuniqueID) != 'undefined' ) {
+                        oLnk = oULs[i].parentNode.getElementsByTagName( 'a' )[0];
+                        if( oLnk && ( ( oState && oULs[i].style.display == 'none' ) || ( !oState && oULs[i].style.display != 'none' ) ) ) {
+                                oLnk.onclick();
+} } } }
+//-->
+  </script>
+</head>
+<body dir="ltr" lang="en-US">
+<ol id="myOutline">
+  <li> Instruction Level Parallelism
+    <ol>
+      <li> Overview
+        <ol>
+          <li> Properties
+            <ol>
+              <li> Can process multiple instructions per PC cycle. </li>
+              <li> Issue Width := The max number of instructions that
+can be executed simultaneously. </li>
+              <li> Not all types of instructions fit in all types of
+issue slots. </li>
+            </ol>
+          </li>
+          <li> Pros and Cons (Compared to single issue machines ?)
+            <ol>
+              <li> Pros <br>
+Higher overall instruction throughput<br>
+Decrease in Cycle per Instruction <i>equivalent to the above</i> </li>
+              <li> Cons <br>
+More complex hardware, potentially longer wire lengths<br>
+More complex compilers (harder scheduling job). </li>
+            </ol>
+          </li>
+        </ol>
+      </li>
+      <li> Superscalars (major types?)
+        <ol>
+          <li> Overview
+            <ol>
+              <li> General Requirements&nbsp;
+                <ol>
+                  <li> Instruction fetch <br>
+Fetch multiple instructions simultaneously<br>
+Speculative fetching of instructions based on (dynamic) branch
+prediction </li>
+                  <li> Instruction issue <br>
+Issue multiple instructions simultaneously<br>
+Determine which instructions to can be issued </li>
+                  <li> Instruction commit <br>
+Commit instructions in program generated order </li>
+                  <li> Duplicated and more complex HW </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Statically (In-order) Scheduled Superscalars
+            <ol>
+              <li> Properties&nbsp;
+                <ol>
+                  <li> Instructions are fetched, executed, and
+committed in compiler generated order. </li>
+                  <li> Instructions are statically scheduled by the
+hardware (in compiler generated order) </li>
+                  <li> In a superscalar machine of issue width N, up to
+N of the next instructions can be issued simultaneously. There can be
+hazards within the N instructions. </li>
+                </ol>
+              </li>
+              <li> Advantages (Compared to dynamic scheduling ?)
+                <ol>
+                  <li> Simpler implementation </li>
+                  <li> Faster clock cycles </li>
+                  <li> Smaller HW (fewer transistors) </li>
+                  <li> Faster design/development/debug cycle </li>
+                </ol>
+              </li>
+              <li> Specific Requirements/Costs for in-order
+superscalars&nbsp;
+                <ol>
+                  <li> Need to fetch more instructions (why?) <i><br>
+Because more instructions are being issued per PC</i> </li>
+                  <li> Need independent instructions (why?) <i><br>
+Because instructions with data dependencies can not be executed
+simultaneously</i> </li>
+                  <li> Need a good local mix of instructions (why?) <i><br>
+Because instructions can only be issued in certain issue slots.</i> </li>
+                  <li> Need more instructions to hide load delays
+(why?) <i><br>
+Because many instructions have data dependencies on loads?</i> </li>
+                  <li> Need to make better branch predictions (why?) <i><br>
+Because throughput increases depend on executing instructions in
+successfully predicted branched (particularly in Speculative scheduled
+dynamically issued super scalars)?</i> </li>
+                </ol>
+              </li>
+              <li> Two styles (what are they?)
+                <ol>
+                  <li> Dispatch buffer &amp; Instruction slotting
+(Alpha 21164)
+                    <ol>
+                      <li> Can issue up to 4 instructions at once
+                        <ol>
+                          <li> Empty instruction buffer completely
+before refilling </li>
+                          <li> Compiler can pad with noOps so
+conflicting instructions are issued in following instructions </li>
+                        </ol>
+                      </li>
+                      <li> Can be no data dependencies in same issue
+cycle (with some exceptions)
+                        <ol>
+                          <li> Hardware required to detect data hazards
+                          </li>
+                          <li> Hardware required to control bypass
+logic </li>
+                        </ol>
+                      </li>
+                      <li> Fetch and Issue Pipeline:
+                        <ol>
+                          <li> Instruction fetch, branch prediction
+bits read </li>
+                          <li> Opcode decode
+                            <ol>
+                              <li> Target address calculated </li>
+                              <li> If branch predicted take, redirect
+instruction fetch </li>
+                            </ol>
+                          </li>
+                          <li> Instruction slotting
+                            <ol>
+                              <li> Decide which of the next 4
+instructions can be issued </li>
+                              <li> Check intra-cycle structural and
+data hazards. </li>
+                            </ol>
+                          </li>
+                          <li> Instruction dispatch
+                            <ol>
+                              <li> Inter-cycle load-use hazard check </li>
+                              <li> Register read </li>
+                            </ol>
+                          </li>
+                        </ol>
+                      </li>
+                      <li> Integer Pipeline (steps in addition to Fetch
+and Issues)
+                        <ol>
+                          <li> Integer execution (effective address
+calculation) </li>
+                          <li> Conditional move and branch execution
+(data cache access) </li>
+                          <li> Register write </li>
+                        </ol>
+                      </li>
+                      <li> Floating Point Pipeline (9 stage as opposed
+to the 7 stage Integer pipeline) </li>
+                    </ol>
+                  </li>
+                  <li> Shift register model (UltraSPARC-1)
+                    <ol>
+                      <li> Can issue up to 4 instructions at once
+                        <ol>
+                          <li> New instructions are shifted into the
+buffer each cycle </li>
+                          <li> Some data dependencies can exist among
+instructions being issued in the same cycle. </li>
+                        </ol>
+                      </li>
+                      <li> Fetch and issue pipeline
+                        <ol>
+                          <li> Fetch instruction (including prediction
+bit and cache location) </li>
+                          <li> Decode and put in instruction buffer </li>
+                          <li> Group and dispatch
+                            <ol>
+                              <li> read registers </li>
+                              <li> resolve hazards </li>
+                              <li> dispatch to functional units. </li>
+                            </ol>
+                          </li>
+                          <li> Separate FP/Graphics and
+Integer/Predicated Execution Functional Units </li>
+                          <li> Resolve Traps </li>
+                          <li> Write Registers </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+              <li> Example of Static Multiple Issue Scheduling in
+action: Loop unrolling
+                <ol>
+                  <li> Do ALU/Branch instructions while also doing
+Memory Load/Store instructions
+                    <ol>
+                      <li> Pros and Cons (Compared to no Loop unrolling
+?)
+                        <ol>
+                          <li> Pros <br>
+IPC &gt; 1<br>
+Better (simultaneous) use of Functional Units </li>
+                          <li> Cons <br>
+Increases register pressure<br>
+Hardware is more complicated </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Dynamically (Out-of-order) Scheduled Superscalars
+            <ol>
+              <li> Properties&nbsp;
+                <ol>
+                  <li> Instructions are fetched in compiler generated
+order </li>
+                  <li> Instruction completion can be in order (today's
+machines) or out of order (older machines) . </li>
+                  <li> Dynamic scheduling of instruction execution.
+                    <ol>
+                      <li> Done by the hardware. </li>
+                      <li> Instructions behind stalled instructions can
+be executed. </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+              <li> Advantages (compared to in-order execution ?)
+                <ol>
+                  <li> Independent instructions behind a stalled
+instruction can pass it. </li>
+                  <li> Better at hiding latencies (reduces processor
+stalls) </li>
+                  <li> Higher utilization of functional units. </li>
+                </ol>
+              </li>
+              <li>Why did it go out of style?
+                <ol>
+                  <li>Hardware was expensive for the time (and is still
+relatively expensive). </li>
+                  <li>Register files grew so register pressure became
+less of a concern </li>
+                  <li>Early RISCs had lower CPI </li>
+                </ol>
+              </li>
+              <li>Why did it come back into style?
+                <ol>
+                  <li>Higher chip densities </li>
+                  <li>Greater need to hide latencies (such as?)
+                    <ol>
+                      <li>Growing discrepancies between CPU and memory
+access speeds </li>
+                      <li>Branch mis-prediction penalty increases from
+very wide pipelines </li>
+                    </ol>
+                  </li>
+                  <li>Was generalized to cover more than FP operations
+(to also cover?)
+                    <ol>
+                      <li>hiding branch latencies </li>
+                      <li>hiding cache misses </li>
+                      <li>more general register renaming mechanisms </li>
+                    </ol>
+                  </li>
+                  <li>Committing instructions in order preserves
+precise interrupts </li>
+                  <li> Processors now issue multiple instructions so
+there's more need to exploit ILP </li>
+                </ol>
+              </li>
+              <li> After instruction decode (steps?)
+                <ol>
+                  <li> Check for structural hazards <br>
+An instruction can only be executed if a qualified Functional Unit is
+available<br>
+An instruction is stalled otherwise. </li>
+                  <li> Check for data hazards <br>
+An instruction can only be executed if it's operands have been loaded
+from memory or calculated.<br>
+An instruction is stalled otherwise. </li>
+                </ol>
+              </li>
+              <li> Non-speculative OOE example <br>
+Load has missed in cache and is stalled, but subsequent independent
+instructions are executed in the meantime (requirement?) <br>
+Use lockup-free cache so instructions can be issued while the miss is
+being satisfied </li>
+              <li> Speculative Execution
+                <ol>
+                  <li> Definition&nbsp;
+                    <ol>
+                      <li> Instructions following a branch computation
+are issued (as speculative instructions) before the computation is
+complete </li>
+                    </ol>
+                  </li>
+                  <li> Requirements
+                    <ol>
+                      <li> Instructions can not commit before the
+branch is resolved. </li>
+                      <li> If the branch prediction is correct, the
+instructions are no longer speculative and can be committed. </li>
+                      <li> If the branch prediction is incorrect, the
+speculative instructions are flushed from the pipeline </li>
+                      <li> Execution must be safe, either produces no
+additional exceptions, or exceptions are handled after the instruction
+is no longer speculative. </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+              <li> In-Order Completion vs. Out-of-Order Completion
+                <ol>
+                  <li> Out-of-order completion
+                    <ol>
+                      <li> Examples
+                        <ol>
+                          <li> Scoreboarding (e.g. CDC 6600) </li>
+                          <li> Tomasulo's algorithm (e.g. IBM 360/91)
+                            <ol>
+                              <li>Original motivations&nbsp;
+                                <ol>
+                                  <li> Long Floating Point delays </li>
+                                  <li> Only 4 FP registers </li>
+                                  <li> Wanted common compiler for all
+implementations </li>
+                                </ol>
+                              </li>
+                              <li> Key features&nbsp;
+                                <ol>
+                                  <li> Reservation stations </li>
+                                  <li> Distributed hazard detection and
+execution control (how?)
+                                    <ol>
+                                      <li> Forwarding to eliminate RAW
+hazards </li>
+                                      <li> Register renaming to
+eliminate WAR and WAW hazards </li>
+                                      <li> Determining instruction
+execution order. </li>
+                                    </ol>
+                                  </li>
+                                  <li> Common data bus </li>
+                                  <li> Dynamic memory disambiguation </li>
+                                </ol>
+                              </li>
+                              <li>Reservation stations
+                                <ol>
+                                  <li>What do they do?
+                                    <ol>
+                                      <li> Buffer instructions stalled
+because of RAW hazards and their operands </li>
+                                    </ol>
+                                  </li>
+                                  <li> Source operands can be?
+                                    <ol>
+                                      <li> values </li>
+                                      <li> names of other reservation
+station entries </li>
+                                      <li> load buffer entries </li>
+                                      <li> made available independently
+                                      </li>
+                                    </ol>
+                                  </li>
+                                  <li> An instruction is dispatched to
+its functional unit when?
+                                    <ol>
+                                      <li> both operand values have
+been computed </li>
+                                    </ol>
+                                  </li>
+                                  <li> RAW hazards are eliminated by?
+                                    <ol>
+                                      <li> Forwarding </li>
+                                    </ol>
+                                  </li>
+                                  <li> WAR and WAW hazards are
+eliminated by?
+                                    <ol>
+                                      <li> Register renaming </li>
+                                    </ol>
+                                  </li>
+                                </ol>
+                              </li>
+                              <li> Common data bus (CDB)
+                                <ol>
+                                  <li> What does it do?
+                                    <ol>
+                                      <li> Connects functional units
+and load buffer to reservation stations, registers, and store buffer </li>
+                                      <li> Ships results to all
+hardware that could want an updated value </li>
+                                      <li> Facilitates the forwarding
+that eliminates RAW hazards </li>
+                                    </ol>
+                                  </li>
+                                </ol>
+                              </li>
+                              <li> Distributed hazard detection and
+execution control
+                                <ol>
+                                  <li> Means?
+                                    <ol>
+                                      <li> Each reservation station
+decides when to dispatch instructions to its functional unit. </li>
+                                      <li> Each hardware data entry
+that needs a value from the CDB grabs it directly via snooping </li>
+                                    </ol>
+                                  </li>
+                                  <li> Tags are?
+                                    <ol>
+                                      <li> The things that reservation
+stations, store buffer entries and registers have that indicate where
+their values should come from </li>
+                                    </ol>
+                                  </li>
+                                  <li> Tags are used so that?
+                                    <ol>
+                                      <li> When the match a producer's
+tag, the waiting value with the same tag grabs the value. </li>
+                                    </ol>
+                                  </li>
+                                </ol>
+                              </li>
+                              <li> Dynamic memory disambiguation
+                                <ol>
+                                  <li> The issue?
+                                    <ol>
+                                      <li> Don't want loads to bypass
+stores to the same location </li>
+                                    </ol>
+                                  </li>
+                                  <li> The resolution?
+                                    <ol>
+                                      <li> loads associatively check
+addresses in the store buffer </li>
+                                      <li> If a match if found, it
+grabs the value directly </li>
+                                    </ol>
+                                  </li>
+                                </ol>
+                              </li>
+                              <li> Execution Steps (assuming the
+instruction has been fetched)&nbsp;
+                                <ol>
+                                  <li> Issue and read
+                                    <ol>
+                                      <li> Structural hazard detection
+for registration stations, load buffers and store buffers. Stalls if
+hazard encountered </li>
+                                      <li> Read registers for source
+operands. Put into reservation station if contain values. Otherwise put
+tags of producing functional units (renaming registers to avoid data
+hazards. </li>
+                                    </ol>
+                                  </li>
+                                  <li> Execute
+                                    <ol>
+                                      <li> RAW hazard detection </li>
+                                      <li> Snoop on CDB for missing
+operands </li>
+                                      <li> Dispatch after operand
+values are obtained </li>
+                                      <li> Execute operation </li>
+                                      <li> Calculate effective address
+and start memory operation </li>
+                                    </ol>
+                                  </li>
+                                  <li> Write
+                                    <ol>
+                                      <li> Broadcast results and tag
+(reservation station ID) on the CDB </li>
+                                      <li> Consumers obtain result via
+snooping (if tag match occurs) </li>
+                                    </ol>
+                                  </li>
+                                </ol>
+                              </li>
+                              <li> Dynamic Loop unrolling
+                                <ol>
+                                  <li> Advantages (over static loop
+unrolling?)
+                                    <ol>
+                                      <li> Effectively increases number
+of registers without increased register pressure </li>
+                                      <li> Dynamic Memory
+Disambiguation prevents loads after stores to same register location if
+the loop executes first </li>
+                                      <li> Simpler compiler </li>
+                                    </ol>
+                                  </li>
+                                  <li> Disadvantages
+                                    <ol>
+                                      <li> Loop control instructions
+still executed </li>
+                                      <li> Much more complicated HW </li>
+                                    </ol>
+                                  </li>
+                                </ol>
+                              </li>
+                              <li> Dynamic Scheduling
+                                <ol>
+                                  <li> Advantages over compiler code
+scheduling&nbsp;
+                                    <ol>
+                                      <li> More places to hold register
+values </li>
+                                      <li> Instructions are issued
+dynamically based on when operands are available </li>
+                                      <li> Completely disambiguates
+register locations </li>
+                                    </ol>
+                                  </li>
+                                  <li> Effects of these
+advantages&nbsp;
+                                    <ol>
+                                      <li> More effective at exploiting
+parallelism (esp. given compiler technology at the time) </li>
+                                      <li> Efficient execution of code
+compiled for a different pipeline </li>
+                                      <li> Simpler compiler (in theory)
+                                      </li>
+                                    </ol>
+                                  </li>
+                                  <li> Use both! (<i>Dynamic and static
+instruction scheduling?)</i> </li>
+                                </ol>
+                              </li>
+                            </ol>
+                          </li>
+                        </ol>
+                      </li>
+                      <li> Leads to (Cons?)
+                        <ol>
+                          <li> Imprecise interrupts </li>
+                          <li> RAW hazards </li>
+                          <li> WAW hazards </li>
+                        </ol>
+                      </li>
+                      <li> Needs to keep track of&nbsp;
+                        <ol>
+                          <li> Stage that instructions are in in the
+pipelining and when instructions have completed </li>
+                          <li> Which registers are being used (for
+reading and writing) by which instructions </li>
+                          <li> Which operands are available </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                  <li> In-order completion
+                    <ol>
+                      <li> Examples&nbsp;
+                        <ol>
+                          <li>Large physical register file &amp;
+register renaming (e.g. MIPS R10000/R12000 &amp; Alpha 21264/21364)
+                            <ol>
+                              <li>Provides a mapping between 2 register
+steps (which are?)
+                                <ol>
+                                  <li>Architectural registers (defined
+by?)
+                                    <ol>
+                                      <li>The Instruction Set
+Architecture </li>
+                                    </ol>
+                                  </li>
+                                  <li>Physical registers Implemented by
+the CPU
+                                    <ol>
+                                      <li>Hold the results of
+instructions committed so far </li>
+                                      <li>Hold results of subsequent
+instructions that haven't yet been committed </li>
+                                      <li>There are more of them than
+Architectural registers (approximately as many as the issue width times
+the number of stages between register renaming and commit) </li>
+                                    </ol>
+                                  </li>
+                                </ol>
+                              </li>
+                              <li>How does it work?
+                                <ol>
+                                  <li>An architectural register is
+mapped to a physical register during a register renaming stage in the
+pipeline (who creates and uses these mappings?)
+                                    <ol>
+                                      <li>Destination registers create
+them. </li>
+                                      <li>Source registers use them. </li>
+                                    </ol>
+                                  </li>
+                                  <li>After the renaming stage,
+operands are referred to by their physical register location (hazards
+are detected how?)
+                                    <ol>
+                                      <li>By comparing physical
+register number, not architectural number. </li>
+                                    </ol>
+                                  </li>
+                                </ol>
+                              </li>
+                              <li>Advantages?
+                                <ol>
+                                  <li>Allows increased ILP </li>
+                                  <li>Eliminates RAW and WAW hazards
+(false name dependencies) </li>
+                                </ol>
+                              </li>
+                              <li>R10000 specifics (What are the major
+components?)
+                                <ol>
+                                  <li>Structures for register renaming
+                                    <ol>
+                                      <li>64 physical registers for
+each for Integer and FP </li>
+                                      <li>Separate map tables for
+Integer and FP </li>
+                                      <li>Source operands refer to the
+current mapping </li>
+                                      <li>Destination register numbers
+assigned a new register number from a free register list (one each for
+Integer and FP). </li>
+                                    </ol>
+                                  </li>
+                                  <li>Instruction "queues" (Integer,
+FP, and data transfer)
+                                    <ol>
+                                      <li>Contains decoded and mapped
+instructions with current physical register numbers<br>
+- Instructions entered into free locations in the queue<br>
+- Sit there until dispatch to functional unit<br>
+- Somewhat similar to Reservation Station in Tomasulo Architecture,
+except without values or valid-bits </li>
+                                      <li>Used to determine when
+operands are available<br>
+- Compare each source operand of instructions in the queue to
+destination values just computed </li>
+                                      <li>Determines when an
+appropriate Functional Unit is available </li>
+                                      <li>Dispatches to Functional Unit
+                                      </li>
+                                    </ol>
+                                  </li>
+                                  <li>Active list for all uncommitted
+instructions
+                                    <ol>
+                                      <li>Mechanism that allows precise
+interrupts<br>
+- instructions entered in program generated order<br>
+- allows instructions to be committed in program generated order </li>
+                                      <li>Instructions removed from
+this list when the instruction commits, meaning<br>
+- The instruction has completed execution <br>
+- All instructions before have been committed </li>
+                                      <li>Contains the <i>previous</i>
+architectural-to-physical registration number mapping<br>
+- Used to recreate the mapping for restart after an exception </li>
+                                      <li>Instructions in other
+hardware structures and functional units are identified by their active
+list location. </li>
+                                    </ol>
+                                  </li>
+                                  <li>Busy register table (Integer and
+FP)
+                                    <ol>
+                                      <li>Indicates if a physical
+register location contains a value </li>
+                                      <li>Somewhat analogous to
+Tomasulo's register status </li>
+                                      <li>Used to determine operand
+availability<br>
+- Bit is set when a register is mapped and leaves the free list
+(meaning it's not available yet).<br>
+- Bit is cleared when the Functional Unit writes to the register.</li>
+                                    </ol>
+                                  </li>
+                                  <li><span style="font-style: italic;">Removed
+Reorder Buffer details as I was reminded in Office Hours that we didn't
+cover these slides in class</span><br>
+                                  </li>
+                                </ol>
+                              </li>
+                            </ol>
+                          </li>
+                          <li>Pool of Physical Registers vs. Reorder
+Buffer
+                            <ol>
+                              <li> Advantages of Physical Registers
+over Reorder Buffer&nbsp;
+                                <ol>
+                                  <li> Book claims that commits are
+simpler - Record that value is no longer speculative in register busy
+table<br>
+- unmap previous mapping for architectural register </li>
+                                  <li> Instruction issue simpler<br>
+- only look in one place for source operands (physical register file) </li>
+                                  <li> Faster to index map table to get
+source operands than to do associative search on ROB<br>
+- can have more outstanding results </li>
+                                </ol>
+                              </li>
+                              <li> Advantages of Reorder Buffer over
+Physical Registers&nbsp;
+                                <ol>
+                                  <li> Deallocating register is simpler<br>
+- Physical registers have to look for outstanding uses in register busy
+table<br>
+- But not done in practice (wait until instruction that redefines the
+architectural register number commits) </li>
+                                </ol>
+                              </li>
+                            </ol>
+                          </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                  <li> Limitations&nbsp;
+                    <ol>
+                      <li> Amount of ILP available in the code </li>
+                      <li> Scheduling window size
+                        <ol>
+                          <li> Need to do associative searches which
+affect cycle time </li>
+                          <li> Relatively few instructions in window </li>
+                        </ol>
+                      </li>
+                      <li> Number and types of functional units </li>
+                      <li> Number of locations for values </li>
+                      <li> Number of ports to memory </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+        </ol>
+      </li>
+      <li> VLIW (Very Long Instruction Word)
+        <ol>
+          <li> Overview
+            <ol>
+              <li> Instructions are scheduled by the compiler </li>
+              <li> A fixed number of instructions are formatted as a
+single big instruction (called a bundle)
+                <ol>
+                  <li> Usually LIW (not so big, say 3 instructions) </li>
+                  <li> Entails a change to the Instruction Set
+Architecture </li>
+                </ol>
+              </li>
+              <li> Want operations in a bundle to execute in parallel
+                <ol>
+                  <li> Formatted to allow parallel instruction decoding
+                  </li>
+                  <li> There are enough Functional Units available for
+parallel execution of the types of instructions in a bundle </li>
+                  <li> Functional units are pipelined </li>
+                </ol>
+              </li>
+              <li> Examples of implementations
+                <ol>
+                  <li> Originally Multiflow and Cydra 5 (8 to 16
+operations per bundle) in the 1980s </li>
+                  <li> Today's examples include Itanium (3 ops),
+Transmeta Crusoe (4 ops), and embedded processors </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Goals&nbsp;
+            <ol>
+              <li> Reduced HW complexity </li>
+              <li> Less development time </li>
+              <li> Shorter clock cycle </li>
+              <li> Better performance </li>
+              <li> Reduced power consumption </li>
+            </ol>
+          </li>
+          <li> How does VLIW reduce HW complexity (in theory)&nbsp;
+            <ol>
+              <li> Less hardware for multiple issue
+                <ol>
+                  <li> No dependence checking for instructions issued
+in a bundle </li>
+                  <li> Fewer paths between instruction issue slots and
+functional units </li>
+                </ol>
+              </li>
+              <li> Simpler instruction dispatch
+                <ol>
+                  <li> No out of order execution, no instruction
+grouping </li>
+                </ol>
+              </li>
+              <li> No structural hazard-checking logic </li>
+            </ol>
+          </li>
+          <li> Compiler support to increase ILP
+            <ol>
+              <li> Compiler creates each VLIW </li>
+              <li> Greater need for good code scheduling than with
+in-order-scheduling superscalars </li>
+              <li> Detects hazards and hides latencies
+                <ol>
+                  <li> Structural hazards
+                    <ol>
+                      <li> No 2 instructions to the same functional
+unit </li>
+                      <li> No 2 accesses to the same memory bank </li>
+                    </ol>
+                  </li>
+                  <li> Data hazards
+                    <ol>
+                      <li> No data hazards among instructions in the
+bundle </li>
+                    </ol>
+                  </li>
+                  <li> Control Hazards
+                    <ol>
+                      <li> Predicated execution </li>
+                      <li> Static branch prediction </li>
+                    </ol>
+                  </li>
+                  <li> Hiding latencies
+                    <ol>
+                      <li> Pre-fetching operations </li>
+                      <li> Hoisting loads above stores </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Compiler optimizations to increase ILP
+            <ol>
+              <li> Loop unrolling </li>
+              <li> Aggressive inlining; function becomes part of the
+caller code </li>
+              <li> Software pipelining, schedules instructions from
+different iterations together </li>
+              <li> Trace Scheduling <br>
+- Trace entrances and exits at each iteration </li>
+              <li> Superblocks<br>
+- Trace exits at each iteration, one trace entrance and multiple exits
+(each iteration) </li>
+              <li> Advantages of thes optimizations depend on:
+                <ol>
+                  <li> Path frequencies </li>
+                  <li> Empty instruction slots </li>
+                  <li> Whether a moved instruction is at the beginning
+of a critical path </li>
+                  <li> Amount of code compensation on non-trace path </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> IA-64 EPIC (Explicitly Parallel Instruction Computing):
+Itanium Implementation
+            <ol>
+              <li> Bundles of instructions
+                <ol>
+                  <li> 128 bit bundles </li>
+                  <li> 3 instructions per bundle </li>
+                  <li> 2 bundles issues at once (if issue one, get
+another) </li>
+                </ol>
+              </li>
+              <li> Registers
+                <ol>
+                  <li> 128 FP and Integer registers </li>
+                  <li> 128 additional registers for loop unrolling and
+similar optimizations </li>
+                  <li> Miscellaneous other registers </li>
+                  <li> Implications for performance?
+                    <ol>
+                      <li> Less register pressure (+) </li>
+                      <li> Less spill code (+) </li>
+                      <li> Fewer WAW and WAR hazards (+) </li>
+                      <li> Longer register access times (-) </li>
+                      <li> Longer context switches (-) </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+              <li> Full predicated execution<br>
+- Supported by 64 one-bit predicate registers<br>
+- Instructions can set 2 at once (comparison result and complement)
+                <ol>
+                  <li> Implications for architecture?
+                    <ol>
+                      <li> <i>Decode an external operand (2 more
+register identifiers)</i> </li>
+                    </ol>
+                  </li>
+                  <li> Implications for the HW?
+                    <ol>
+                      <li> <i>No HW support for branches</i> </li>
+                      <li> <i>Addition registers, lines, functional
+units</i> </li>
+                    </ol>
+                  </li>
+                  <li> Implications for exploiting ILP?
+                    <ol>
+                      <li> <i>Eliminating branch delays</i> </li>
+                      <li> <i>More effective pre-fetching and code
+scheduling</i> </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+              <li> Template
+                <ol>
+                  <li> Template ID indicates?
+                    <ol>
+                      <li> Type of operation for each instruction </li>
+                      <li> Instruction order in bundle </li>
+                    </ol>
+                  </li>
+                  <li> Restrictions on which instructions can be in
+which slots - Schedule code for functional unit availability (i.e.
+template types) and latencies. </li>
+                  <li> A stop bit delineates the instructions that can
+be executed in parallel - All instructions before stop bit have no data
+dependencies </li>
+                  <li> Implications for HW?
+                    <ol>
+                      <li> Simpler issue logic, no instruction
+slotting, no out-of-order issue </li>
+                      <li> Potentially fewer paths between issue slots
+and functional units </li>
+                      <li> Potentially no structural-hazard checks </li>
+                      <li> Hardware need not determine intra-bundle
+data dependencies </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+              <li> Branch support
+                <ol>
+                  <li> Full predicated execution </li>
+                  <li> Hierarchy of branch prediction structures in
+different pipeline stages
+                    <ol>
+                      <li> 4-target BTB for repeatedly executed
+taken-branches - An instruction puts a specific target in it (ie, the
+BTB is exposed to the architecture) </li>
+                      <li> larger backup BTB </li>
+                      <li> Correlated branch prediction for
+hard-to-predict branches
+                        <ol>
+                          <li> Instruction hint that branches that are
+statically easy to predict should not be placed in it </li>
+                          <li> Private history registers, 4 history
+bits, shared Program History Tables </li>
+                        </ol>
+                      </li>
+                      <li> Separate structure for multi-way branches </li>
+                    </ol>
+                  </li>
+                  <li> Branch prediction instruction for target
+forecasting </li>
+                  <li> Branch prediction instruction for storing a
+branch prediction </li>
+                </ol>
+              </li>
+              <li> Complications<br>
+- ISA and microarchitecture seem complicated (with some features of an
+out-of-order processor
+                <ol>
+                  <li> Not all instructions in a bundle need stall if
+one stalls <br>
+- A scoreboard keeps track of produced values that will be source
+operands for stalled instructions </li>
+                  <li> Branch prediction hierarchy </li>
+                  <li> Dynamically sized register stack (or register
+window)
+                    <ol>
+                      <li> Special hardware for register stack overflow
+detection </li>
+                      <li> Special instructions for saving and loading
+the register window </li>
+                    </ol>
+                  </li>
+                  <li> Register remapping to support rotating registers
+on the stack to aid in SW pipelining. </li>
+                  <li> Array address post-increment &amp; loop control </li>
+                  <li> Don't want to store speculative values to memory
+                    <ol>
+                      <li> Special instructions check poison bits to
+detect whether value is speculative (for nonspeculative code or
+exceptions) </li>
+                      <li> OS can override the ban on storing (e.g.,
+for a context switch) </li>
+                      <li> Different mechanism for speculative FP
+values </li>
+                    </ol>
+                  </li>
+                  <li> Backwards compatibility
+                    <ol>
+                      <li> x86 (IA-31) </li>
+                      <li> PA-RISC compatible memory model </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Trimedia TM32
+            <ol>
+              <li> Designed for the embedded market </li>
+              <li> Classic VLIW
+                <ol>
+                  <li> No hazard detection in hardware
+                    <ol>
+                      <li> noOps "guarantee" that dependences are
+followed </li>
+                    </ol>
+                  </li>
+                  <li> Instructions decompressed on fetching </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+        </ol>
+      </li>
+      <li> Superscalars vs. VLIW
+        <ol>
+          <li> Superscalars have more complex hardware for instruction
+scheduling (how?)
+            <ol>
+              <li> Instruction slotting or out-of-order hardware </li>
+              <li> More paths or more complicated paths between
+instruction issue structure and functional units. </li>
+              <li> Dependence checking logic between parallel
+instructions </li>
+              <li> functional unit hazard checking </li>
+              <li> Consequences:
+                <ol>
+                  <li> slower cycle times </li>
+                  <li> more chip real estate </li>
+                  <li> more power consumption </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> VLIW has more functional units if it supports full
+predication
+            <ol>
+              <li> Paths between instruction issue structure and more
+functional units </li>
+              <li> Possible consequences
+                <ol>
+                  <li> slower cycle times </li>
+                  <li> more chip real estate </li>
+                  <li> more power consumption </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> VLIW has larger code size
+            <ol>
+              <li> IA-64 code ~= 2 to 4 times long as x86 code
+                <ol>
+                  <li> eg, 128b holds 4 rather than 3 instructions on a
+RISC superscalar </li>
+                  <li> VLIW noOps if don't have an instruction of the
+correct type </li>
+                  <li> Branch targets must be at the beginning of a
+bundle. </li>
+                  <li> <i>Compensation code (was <strike>Predicated
+execution to avoid branches</strike>)</i> </li>
+                  <li> Need special instructions (for?)
+                    <ol>
+                      <li> Exceptions checking </li>
+                      <li> Checking for improper load hoisting (memory
+aliases) </li>
+                      <li> Allocate register stacks (or windows) for
+local variables </li>
+                      <li> Branch prediction </li>
+                    </ol>
+                  </li>
+                  <li> Consequences
+                    <ol>
+                      <li> <i>Increase in throughput</i> </li>
+                      <li> <i>Decrease in cache efficiency</i> </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> VLIW requires a more complex compiler - More design
+effort or poorer quality code if good optimizations aren't implemented </li>
+          <li> Superscalars can more efficiently execute
+pipeline-dependent code<br>
+- Don't have to recompile if the implementation is changed. </li>
+          <li> What else?<br>
+            <i>I don't know. Help?</i><br>
+          </li>
+        </ol>
+      </li>
+    </ol>
+  </li>
+  <li> Caching
+    <ol>
+      <li> Basics
+        <ol>
+          <li> Overview
+            <ol>
+              <li> Important because CPU speed increases 25-30%/year
+while DRAM speed increases 2-11% </li>
+              <li> Levels of memory with different sizes and speeds (<i>size
+* speed approximately constant</i>)
+                <ol>
+                  <li> Close to CPU small with fast access </li>
+                  <li> Close to main memory, large with slow access </li>
+                </ol>
+              </li>
+              <li> Memory hierarchies improve performance
+                <ol>
+                  <li> Caches are demand driven storage </li>
+                  <li> Principal of locality of reference
+                    <ol>
+                      <li> Temporal: Recently referenced will be
+referenced again soon </li>
+                      <li> Spatial: Words near a referenced word will
+be referenced soon. </li>
+                    </ol>
+                  </li>
+                  <li> Speed/size trade-off in memory. Optimize for
+fast access for most references </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Organization
+            <ol>
+              <li> Block<br>
+- Number of bytes associated with 1 tag<br>
+- Usually number of bytes transferred on a memory request </li>
+              <li> Set - The blocks that can be accessed with the same
+index bits </li>
+              <li> Associativity<br>
+- The number of Blocks per Set
+                <ol>
+                  <li> Direct map </li>
+                  <li> Set associative </li>
+                  <li> Fully associative </li>
+                </ol>
+              </li>
+              <li> Size<br>
+- The number of bytes of data
+                <ol>
+                  <li> How is this calculated? <i>Block *
+Associativity * (Number of Sets)</i> </li>
+                </ol>
+              </li>
+              <li> Formulas
+                <ol>
+                  <li> Direct mapped cache: # Index Bits = log_2(cache
+size / block size) </li>
+                  <li> Set associative cache: # Index Bits =
+log_2(cache size / (block size * associativity)) </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Tradeoffs
+            <ol>
+              <li> Cache size
+                <ol>
+                  <li> The bigger the cache, the higher the hit ratio
+but longer the access time </li>
+                </ol>
+              </li>
+              <li> Block size
+                <ol>
+                  <li> The bigger the block
+                    <ol>
+                      <li> the better the spatial locality </li>
+                      <li> the less the block transfer overhead (per
+block) </li>
+                      <li> the less tag overhead (per entry, assuming
+fixed number of entries) </li>
+                      <li> the lower the average block utilization </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+              <li> Associativity
+                <ol>
+                  <li> The larger the associativity
+                    <ol>
+                      <li> the higher the hit ratio </li>
+                      <li> the larger the hardware costs
+(comparator/set) </li>
+                      <li> the longer the hit time (larger MUX) </li>
+                      <li> the need for hardware to choose blocks to be
+replaced </li>
+                      <li> the need for increase in number of tag bits </li>
+                    </ol>
+                  </li>
+                  <li> More important in small caches than large ones
+(because more memory locations map to the same line)<br>
+- Eg Translation Lookaside Buffers. </li>
+                </ol>
+              </li>
+              <li> Memory Update Policy
+                <ol>
+                  <li> Write-through
+                    <ol>
+                      <li> Performance depends on the number of writes </li>
+                      <li> Store buffer decreases this
+                        <ol>
+                          <li> Store compression </li>
+                          <li> Check on load misses </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                  <li> Write-back
+                    <ol>
+                      <li> Performance depends on number of dirty block
+replacements </li>
+                      <li> Dirty bit and logic for checking it </li>
+                      <li> Tag check before the write </li>
+                      <li> Must flush the cache before I/O </li>
+                      <li> optimization: fetch before replace </li>
+                    </ol>
+                  </li>
+                  <li> Both policies use a merging store buffer </li>
+                </ol>
+              </li>
+              <li> Contents
+                <ol>
+                  <li> Separate instruction and data caches
+                    <ol>
+                      <li> Advantages
+                        <ol>
+                          <li> Separate caches implies double the
+bandwidth </li>
+                          <li> Shorter access time </li>
+                          <li> Instruction and data caches have
+different optimal configurations </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                  <li> Unified instruction and data caches
+                    <ol>
+                      <li> Advantages
+                        <ol>
+                          <li> Lower miss rate <span
+ style="font-style: italic;">Because there's more flexibility on what
+goes in the cache (eg, if you need much room for instructions than
+data, (or vice versa) it's there)</span><br>
+                          </li>
+                          <li> Less cache controller hardware </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Address translation
+            <ol>
+              <li> In a nutshell
+                <ol>
+                  <li> Maps a virtual address to a physical address,
+using the page tables </li>
+                  <li> Page size := Number of page offset bits. </li>
+                </ol>
+              </li>
+              <li> Translation Lookaside Buffer (TLB)
+                <ol>
+                  <li> Cache of most recently translated
+virtual-to-physical page mappings </li>
+                  <li> Typical configuration
+                    <ol>
+                      <li> 64 or 128 entries </li>
+                      <li> Fully associative </li>
+                      <li> 4 to 8 Byte blocks </li>
+                      <li> &frac12; to 1 cycle hit time </li>
+                      <li> Low tens of cycles miss penalty </li>
+                      <li> Misses can be handled in SW, SW w/ HW
+support, FW, or HW </li>
+                      <li> Write-back update policy </li>
+                    </ol>
+                  </li>
+                  <li> Works because of locality of reference </li>
+                  <li> Much faster than using page tables </li>
+                  <li> Using a TLB
+                    <ol>
+                      <li> Lookup the virtual page number
+                        <ol>
+                          <li> If hit
+                            <ol>
+                              <li> Concatenate physical page number and
+page offset bits to get physical address </li>
+                              <li> Set the reference bit </li>
+                              <li> If writing, set the dirty bit </li>
+                            </ol>
+                          </li>
+                          <li> If miss
+                            <ol>
+                              <li> Get the physical address from the
+page table </li>
+                              <li> Evict a TLB entry, set
+reference/dirty bits in the page table </li>
+                              <li> Update the TLB with the new entry </li>
+                            </ol>
+                          </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+              <li> Virtual vs. Physical addressing
+                <ol>
+                  <li> Virtual Addressing
+                    <ol>
+                      <li> Access with a virtual address (index + tag) </li>
+                      <li> Do address translation on a cache miss </li>
+                      <li> Advantages over Physical addressing
+                        <ol>
+                          <li> Faster for hits because no address
+translating </li>
+                          <li> Compiler support for better data
+placement </li>
+                        </ol>
+                      </li>
+                      <li> Disadvantages
+                        <ol>
+                          <li> Need to flush the cache on context
+switch - Process identification (PID) can avoid this </li>
+                          <li> Synonyms
+                            <ol>
+                              <li> The Synonym problem
+                                <ol>
+                                  <li> If two separate processing are
+sharing data, two different virtual addresses map to the same physical
+address </li>
+                                  <li> There are two copies of the data
+in the cache<br>
+- <i>Meaning, there are two copies of the mapping data in the TLB
+cache?</i> </li>
+                                  <li> On a write, only one will be
+updated, so the other has old data </li>
+                                </ol>
+                              </li>
+                              <li> A solution: page coloring
+                                <ol>
+                                  <li> Processes share segments<br>
+- All shared data share the same offset (low order bits) from the
+beginning of the segment. </li>
+                                  <li> Each set of the cache must have
+size less than or equal to the segment size </li>
+                                  <li> Index taken from segment offset,
+tag compared on segment number </li>
+                                </ol>
+                              </li>
+                            </ol>
+                          </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                  <li> Physical Addressing
+                    <ol>
+                      <li> Access with a physical index and compare tag
+                      </li>
+                      <li> Do address translation on every cache access
+                      </li>
+                      <li> Advantages over Virtual Addressing
+                        <ol>
+                          <li> No cache flushing on context switch </li>
+                          <li> No synonym problem </li>
+                        </ol>
+                      </li>
+                      <li> Disadvantages
+                        <ol>
+                          <li> Translations on all accesses
+                            <ol>
+                              <li> If implementation is
+straightforward, hit time increases because must translate on every
+access </li>
+                            </ol>
+                          </li>
+                          <li> A solution: Translate in parallel with
+access
+                            <ol>
+                              <li> Restrict cache size so that cache
+index bits are in the page offset<br>
+- Virtual and physical bits are the same<br>
+- <i>Called being </i>Virtually Indexed </li>
+                              <li> Access the TLB and cache at the same
+time </li>
+                              <li> Compare the physical tag from the
+cache to the physical address (page frame #) from the TLB<br>
+- <i>Called being </i>Physically tagged </li>
+                              <li> Can increase the cache size by using
+associativity<br>
+- Still use page offset bits for the index </li>
+                            </ol>
+                          </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+              <li> Hierarchies
+                <ol>
+                  <li> Different caches have different sizes, access
+times and purposes. </li>
+                  <li> Decrease effective memory access time
+                    <ol>
+                      <li> Misses in L1 cache will be satisfied by L2
+cache </li>
+                      <li> Avoid going all the way to memory </li>
+                    </ol>
+                  </li>
+                  <li> Level 1 cache goal: Minimize hit time (in the
+common case) </li>
+                  <li> Level 2 cache goal: Keep traffic off of the
+system bus </li>
+                </ol>
+              </li>
+              <li> Metrics
+                <ol>
+                  <li> HitRatio (MissRatio)
+                    <ol>
+                      <li> #Hits/#Accesses (#Misses/#Accesses) </li>
+                    </ol>
+                  </li>
+                  <li> Effective access time
+                    <ol>
+                      <li> HitTime + MissRatio * MissPenalty </li>
+                      <li> Roughly average time it takes to do a memory
+reference </li>
+                      <li> Performance of the memory system, including
+implementation specific factor </li>
+                    </ol>
+                  </li>
+                  <li> For hierarchies
+                    <ol>
+                      <li> LocalMissRatio
+                        <ol>
+                          <li> #Misses/#LocalAccesses </li>
+                        </ol>
+                      </li>
+                      <li> GlobalMissRatio
+                        <ol>
+                          <li> #Misses/#TotalAccesses </li>
+                        </ol>
+                      </li>
+                      <li> Effective access time
+                        <ol>
+                          <li> HitTime_1 + LocalMissRatio_1(HitTime_2 +
+LocalMissRatio_2 ( HitTime_N-1.... + LocalMissRatio_N (
+MissPenalty_N)...) </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+              <li> Miss Classification - Used to provide insight into
+general causes - Does not explain causes of individual misses
+                <ol>
+                  <li> Compulsory
+                    <ol>
+                      <li> First reference misses </li>
+                      <li> Decrease by?
+                        <ol>
+                          <li> <i>(Corrected 9:24pm 12/12) Increasing
+block size</i> </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                  <li> Capacity
+                    <ol>
+                      <li> Due to finite size of cache </li>
+                      <li> Decrease by?
+                        <ol>
+                          <li> <i>Increasing size of cache</i> </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                  <li> Conflict
+                    <ol>
+                      <li> Too many blocks map to the same set </li>
+                      <li> Decrease by?
+                        <ol>
+                          <li> <span style="font-style: italic;">(Corrected
+9:24 pm 12/12) Increasing</span><i>
+associativity</i> </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                  <li> Coherence (invalidation)
+                    <ol>
+                      <li> Decrease by?
+                        <ol>
+                          <li> <i>Page coloring</i> </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+        </ol>
+      </li>
+      <li> Advanced Techniques
+        <ol>
+          <li> Approaches to improving performance
+            <ol>
+              <li> Eliminate memory operations </li>
+              <li> Decrease number of misses </li>
+              <li> Decrease miss penalty </li>
+              <li> Decrease cache/memory access times </li>
+              <li> Hide memory latencies </li>
+              <li> Increase cache throughput </li>
+              <li> Increase memory bandwidth </li>
+            </ol>
+          </li>
+          <li> The old way of handling a cache miss
+            <ol>
+              <li> Basic steps
+                <ol>
+                  <li> Send the address and read operation to the next
+level </li>
+                  <li> Wait for the data to arrive </li>
+                  <li> Update the cache entry with data: rewrite the
+tag, turn the valid (<i>reference</i>) bit on, clear the dirty bit (if
+data cache and write back) </li>
+                  <li> Resend the address, find hit </li>
+                </ol>
+              </li>
+              <li> Variations
+                <ol>
+                  <li> Get data before replacing the block </li>
+                  <li> Send the response back as soon as it arrives at
+the cache (early restart) </li>
+                  <li> Requested word is sent from memory first, then
+the rest of the block <i>being replaced </i>(requested word first) </li>
+                  <li> How do these variations improve memory system
+performance?
+                    <ol>
+                      <li> <i>Variation 1 decreases miss rate in
+subsequent accesses. </i> </li>
+                      <li> <i>Variation 2 decreases miss penalty.</i> </li>
+                      <li> <i>Variation 3 is a combination of 1 and 2</i>
+                      </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Non-blocking (lockup free) Caches
+            <ol>
+              <li> Allows the CPU to continue executing instructions
+while a miss is handled </li>
+              <li> Some processors allow only one outstanding miss
+("hit under miss") </li>
+              <li> Some processors allow multiple outstanding misses
+("miss under miss") </li>
+              <li> Use Miss-Status Holding Registers (MSHR)
+                <ol>
+                  <li> Hardware structure for tracking outstanding
+misses
+                    <ol>
+                      <li> Tracks
+                        <ol>
+                          <li> Physical address of the block </li>
+                          <li> Which word in the block </li>
+                          <li> Destination register number (if data) </li>
+                          <li> Mechanism to merge requests to same
+block </li>
+                          <li> Mechanisms to ensure accesses to the
+same location execute in program order </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+              <li> Can be used with both in-order and out-of-order
+processors
+                <ol>
+                  <li> In-order processor: Stalls when the instruction
+using the load data is the next instruction to be processed </li>
+                  <li> Out-of-order processors: Can execute
+instructions that come after the load consuming instruction </li>
+                </ol>
+              </li>
+              <li> How do non-blocking caches improve system
+performance?
+                <ol>
+                  <li> <i>Allow for non-speculative OOE in event of
+cache miss</i> </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Victim Caches
+            <ol>
+              <li> A small fully associative cache
+                <ol>
+                  <li> Contains the most recently replaced blocks of a
+direct mapped cache </li>
+                </ol>
+              </li>
+              <li> Check it on a cache miss
+                <ol>
+                  <li> If present, swap the direct-mapped block and the
+victim cache block </li>
+                </ol>
+              </li>
+              <li> Alternative to 2-way associative cache </li>
+              <li> How do Victim Caches improve system performance?
+                <ol>
+                  <li> <i>Decreases miss ratio and miss penalty on
+average via principle of spatial locality.</i> </li>
+                </ol>
+              </li>
+              <li> Why do Victim Caches work?
+                <ol>
+                  <li> <i>This decrease in miss ratio and penalty is
+encountered in the common case due to principle of temporal locality.</i>
+                  </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Sub-block placement
+            <ol>
+              <li> Divide a block into sub-blocks </li>
+              <li> Sub-blocks are the unit of transfer, and there's a
+valid bit per sub-block </li>
+              <li> Two kinds of misses:
+                <ol>
+                  <li> Block-level miss, tags didn't match </li>
+                  <li> Sub-block-level miss, tags matched, but valid
+bit was clear </li>
+                </ol>
+              </li>
+              <li> Pros:
+                <ol>
+                  <li> The transfer time of a sub-block <i>is smaller
+than the transfer time of the entire block</i> </li>
+                  <li> Don't have tags for each individual sub-block </li>
+                </ol>
+              </li>
+              <li> Cons:
+                <ol>
+                  <li> Less implicit prefetching. </li>
+                </ol>
+              </li>
+              <li> How does sub-block placement improve memory system
+performance?
+                <ol>
+                  <li><span style="font-style: italic;">Reduces miss
+penalty [Vidya]</span><br>
+                  </li>
+                  <li><span style="font-style: italic;">Reduces hit time</span><br>
+                  </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Pseudo-set associative cache
+            <ol>
+              <li> Access the cache </li>
+              <li> If miss, invert the high-order index bit and access
+the cache again </li>
+              <li> Pros:
+                <ol>
+                  <li> Has miss-rate of 2-way set associative cache </li>
+                  <li> Has access time of direct mapped cache if hit in
+the "fast-hit block"
+                    <ol>
+                      <li> <i>Can try to </i>Predict which is the
+fact-hit block </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+              <li> Cons:
+                <ol>
+                  <li> Has slower hit access time than 2-way set
+associative cache if hit is always in the "slow-hit block" </li>
+                </ol>
+              </li>
+              <li> How does pseudo-set associativity improve memory
+system performance?
+                <ol>
+                  <li> <i>In the same way that a 2-way set associative
+cache does, with automated index tracking</i> </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Pipelined cache access
+            <ol>
+              <li> Simple 2-stage pipeline
+                <ol>
+                  <li> Access the cache </li>
+                  <li> Transfer data back to CPU </li>
+                  <li> Tag check &amp; hit/miss logic with the shorter (<i>typo?
+should it read "...with the sorter hit access time"?)</i> </li>
+                </ol>
+              </li>
+              <li> How does pipelined cache access improve memory
+system performance?
+                <ol>
+                  <li> <i>Allows 2 cache access operations to make
+progress during a single PC cycle.</i> </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Hardware controlled prefetching
+            <ol>
+              <li> Overlap prefetching and execution </li>
+              <li> Issue of how close to put the data </li>
+              <li> Stream buffers
+                <ol>
+                  <li> Hold prefetched instructions/data </li>
+                  <li> If required block in the stream buffer, then
+cancel the cache access </li>
+                </ol>
+              </li>
+              <li> How does prefetching improve memory system
+performance?
+                <ol>
+                  <li> <i>Hides latencies.</i> </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Trace Cache
+            <ol>
+              <li> Contains instructions from the dynamic instruction
+stream
+                <ol>
+                  <li> Advantage: Fetch statically noncontiguous
+instructions in a single cycle </li>
+                  <li> Advantage: A more efficient use of instruction
+cache space </li>
+                </ol>
+              </li>
+              <li> Analogous to a cache block w.r.t. accessing </li>
+              <li> Accessing a trace cache
+                <ol>
+                  <li> Trace cache state includes low bits of next
+addresses (target &amp; fallthrough code) for the last instruction in
+the currently executing trace, which is a branch </li>
+                  <li> Trace cache tag is high branch address bits plus
+predictions for all branches in the trace </li>
+                  <li> Asses trace cache and branch predictor, branch
+target buffer, and Instruction cache in parallel </li>
+                  <li> Compare high PC bits &amp; prediction history of
+the current branch instruction to the trace cache tag </li>
+                  <li> If hit, use trace cache and ignore Instruction
+cache </li>
+                  <li> If miss, use the Instruction cache hit, and
+start constructing a new trace </li>
+                </ol>
+              </li>
+              <li> Why does a trace cache work?
+                <ol>
+                  <li> Finds instructions including taken branches to
+lead into a cache block (instead of relying on spatial locality of
+instructions being fetched). </li>
+                </ol>
+              </li>
+              <li> How does it affect performance?
+                <ol>
+                  <li> <i>Pro: Hides latencies for loading
+instructions in the instruction cache that follow a branch</i> </li>
+                  <li> <i>Con: Stores multiple copies of any
+instruction that appears in more than one trace.</i> </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Cache friendly compiler optimizations
+            <ol>
+              <li> Exploit spatial locality
+                <ol>
+                  <li> Schedule for array misses<br>
+- Hoist first load to each cache block </li>
+                </ol>
+              </li>
+              <li> Improve spatial locality
+                <ol>
+                  <li> Group and transpose<br>
+- Makes portions of vectors that are accessed together lie in memory
+together </li>
+                  <li> Loop Interchange - So inner loop follow memory
+layout </li>
+                </ol>
+              </li>
+              <li> Improve temporal locality
+                <ol>
+                  <li> Loop fusion - Do multiple computations on the
+same portion of an array </li>
+                  <li> Tiling (aka Blocking) - Do all computation on a
+small block of memory that will fit into cache </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Memory Banks
+            <ol>
+              <li> Interleaved memory
+                <ol>
+                  <li> Word locations are assigned across multiple
+banks </li>
+                  <li> Interleaving factor: The number of banks </li>
+                  <li> Send a single address to all banks at once </li>
+                  <li> Pros:
+                    <ol>
+                      <li> Get more data for one transfer
+                        <ol>
+                          <li> Data is probably used (why?)
+                            <ol>
+                              <li> <i>Spatial locality</i> </li>
+                            </ol>
+                          </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                  <li> Cons:
+                    <ol>
+                      <li> Larger DRAM chip capacity means fewer banks </li>
+                      <li> Power issue </li>
+                    </ol>
+                  </li>
+                  <li> Effect on performance?
+                    <ol>
+                      <li> <i>Increased bandwidth on average</i> </li>
+                      <li> <i>Some waste of internal resources
+(bandwidth consumed by data that isn't useful)</i> </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+              <li> Independent Memory Banks
+                <ol>
+                  <li> Different banks can be accessed at once, with
+different addresses </li>
+                  <li> Allows parallel access, possibly (<i>but doesn't
+require)</i> parallel data transfer </li>
+                  <li> Multiple memory controllers and separate address
+lines, one for each access - Different controllers can't access the
+same bank </li>
+                  <li> Less area than dual porting </li>
+                  <li> Effect on performance?
+                    <ol>
+                      <li> <i>Increased bandwidth</i> </li>
+                      <li> <i>Allows non-blocking caches to service
+more than one miss at a time.</i> </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Summary
+            <ol>
+              <li> Victim Cache
+                <ol>
+                  <li> Reduce miss penalty </li>
+                </ol>
+              </li>
+              <li> Translation Lookaside Buffer
+                <ol>
+                  <li> Reduce page fault time </li>
+                </ol>
+              </li>
+              <li> Hardware or compiler-based prefetching
+                <ol>
+                  <li> Reduces misses </li>
+                  <li> <i>Really? not "Hides memory latencies?"</i></li>
+                  <li><i><span style="font-style: italic;">Answer:
+Should be "Hides misses", because the pre-fetching is from lower-level
+memory to cache, the cache access still takes place as scheduled.</span><br>
+                    </i></li>
+                </ol>
+              </li>
+              <li> Cache-conscious compiler optimizations
+                <ol>
+                  <li> Reduce misses </li>
+                  <li> Hides miss penalty </li>
+                </ol>
+              </li>
+              <li> Coupling a write-through memory update policy with a
+write buffer
+                <ol>
+                  <li> Eliminate store ops </li>
+                  <li> Hide store latencies </li>
+                </ol>
+              </li>
+              <li> Handling the read miss before replacing a block with
+a write-back memory update policy
+                <ol>
+                  <li> Reduce miss penalty </li>
+                </ol>
+              </li>
+              <li> Merging requests to the same cache block in a
+non-blocking cache
+                <ol>
+                  <li> Hide miss penalty </li>
+                </ol>
+              </li>
+              <li> Requested word first or early restart
+                <ol>
+                  <li> Reduce miss penalty </li>
+                </ol>
+              </li>
+              <li> Cache hierarchies
+                <ol>
+                  <li> Reduce misses </li>
+                  <li> Reduce miss penalty </li>
+                  <li> <i>Reduce hit latency in the common case</i> </li>
+                </ol>
+              </li>
+              <li> Virtual caches
+                <ol>
+                  <li> Reduce miss penalty </li>
+                  <li> <i>Not: "Decrease cache access times?" [Vidhya]</i></li>
+                  <li><i>Answer: Should be "Reduces hit time"<br>
+                    </i></li>
+                </ol>
+              </li>
+              <li> Pipelined cache accesses
+                <ol>
+                  <li> Increase cache throughput </li>
+                </ol>
+              </li>
+              <li> Pseudo-set associative cache
+                <ol>
+                  <li> Reduce Misses </li>
+                </ol>
+              </li>
+              <li> Banked interleaved memories
+                <ol>
+                  <li> Increase bandwidth </li>
+                </ol>
+              </li>
+              <li> Independent memory banks
+                <ol>
+                  <li> Hide latency </li>
+                  <li> <i>Not: "Increase bandwidth?"</i> </li>
+                </ol>
+              </li>
+              <li> Wider bus
+                <ol>
+                  <li> Increase bandwidth </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+        </ol>
+      </li>
+    </ol>
+  </li>
+  <li> Multiprocessors
+    <ol>
+      <li> Programming Models
+        <ol>
+          <li> Shared memory
+            <ol>
+              <li> Regular loads and stores </li>
+              <li> E.g.s Sun, SGI, Cray, Convex, KSR, Sequent </li>
+            </ol>
+          </li>
+          <li> Message passing
+            <ol>
+              <li> Explicit sends and receives </li>
+              <li> TMC, Intel, IBM </li>
+            </ol>
+          </li>
+          <li> Shared Memory vs. Message Passing
+            <ol>
+              <li> Advantages of shared memory
+                <ol>
+                  <li> Simple parallel programming model<br>
+- Can focus on program semantics instead of Interprocess communication
+                    <ol>
+                      <li> Global shared address space </li>
+                      <li> Need not worry about locality, but:
+                        <ol>
+                          <li> Get better performance when program
+takes data placement into account, but:
+                            <ol>
+                              <li> Can do so on an as needed basis </li>
+                            </ol>
+                          </li>
+                        </ol>
+                      </li>
+                      <li> Hardware maintains data coherence
+                        <ol>
+                          <li> synchronize to order processors' access
+to shared data. </li>
+                        </ol>
+                      </li>
+                      <li> Code is similar to uniprocessor so
+parallelizing by programmer or compiler is simple </li>
+                    </ol>
+                  </li>
+                  <li> Low latency (no message passing software) but:
+                    <ol>
+                      <li> Overlap of communication and computation </li>
+                      <li> Latency hiding techniques can be applied to
+MP machines </li>
+                    </ol>
+                  </li>
+                  <li> Higher bandwidth for small transfers, but:
+                    <ol>
+                      <li> Usually <i>small </i>is the only choice </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+              <li> Advantages of message passing
+                <ol>
+                  <li> Abstraction in the programming model abstracts
+the communication costs, but:
+                    <ol>
+                      <li> More complex programming model </li>
+                      <li> Need additional language constructs </li>
+                      <li> Need to program for nearest neighbor
+communication </li>
+                    </ol>
+                  </li>
+                  <li> No coherency hardware </li>
+                  <li> Good throughput on large transfers but:
+                    <ol>
+                      <li> What about small transfers? </li>
+                    </ol>
+                  </li>
+                  <li> More scalable (memory latency doesn't increase
+with the number of processors), but:
+                    <ol>
+                      <li> large-scale SM has distributed memory also,
+but:
+                        <ol>
+                          <li> Wait, doesn't that imply that SM uses
+message passing? </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+              <li> Why there was a debate
+                <ol>
+                  <li> Little experimental data </li>
+                  <li> Implementation not separated from the choice of
+programming model </li>
+                  <li> Can emulate one with the other
+                    <ol>
+                      <li> MP on SM machine
+                        <ol>
+                          <li> Message buffers in local (to each proc)
+memory </li>
+                          <li> copy messages by id/st (<i>ID/State?)</i>
+between buffers </li>
+                        </ol>
+                      </li>
+                      <li> SM on MP machine
+                        <ol>
+                          <li> ID/State transfer becomes a message
+copy, sloooow </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+              <li> Who won?
+                <ol>
+                  <li> <i>It looks like MP in the consumer market, SM
+in the high-end market, which seems a little odd as a major strength of
+MP is high scalability. Both seem to be losing out to
+multi-threaded processors. But really, I think I might be confused in
+this analysis. Help!?</i></li>
+                  <li><i>Notes from office hours discussion: Shared
+memory probably, but nobody's
+dead. If based on how many machines have been sold, it's SM. SM is
+multi-cored. Really, there's a blurring between model and
+implementation.</i> </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+        </ol>
+      </li>
+      <li> Execution Models
+        <ol>
+          <li> Control Parallelism
+            <ol>
+              <li> Identify and synchronize different asynchronous
+threads </li>
+            </ol>
+          </li>
+          <li> Data parallelism
+            <ol>
+              <li> Same operations on different parts of the shared
+data space
+                <ol>
+                  <li> <i>Assumes Shared memory programming model</i> </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Parallelism expression
+            <ol>
+              <li> Language support
+                <ol>
+                  <li> High performance Fortran, ZPL </li>
+                  <li> <i>Java.lang.Thread</i> </li>
+                </ol>
+              </li>
+              <li> Runtime library constructs
+                <ol>
+                  <li> Coarse-grain, explicitly parallel C programs </li>
+                </ol>
+              </li>
+              <li> Automatic (compiler) detection
+                <ol>
+                  <li> Implicitly parallel C &amp; Fortran programs,
+e.g. SUIF &amp; PTRANS compilers </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Application development
+            <ol>
+              <li> Embarrassingly parallel programs could be easily
+parallelized </li>
+              <li> Development of different algorithms for the same
+problem </li>
+            </ol>
+          </li>
+          <li> How to get good parallel performance
+            <ol>
+              <li> Recognize or create parallelism </li>
+              <li> Transform programs to increase parallelism without
+decreasing processor locality </li>
+              <li> Decrease sharing costs </li>
+            </ol>
+          </li>
+          <li> Flynn Classification
+            <ol>
+              <li> SISD
+                <ol>
+                  <li> Single instruction stream, single data stream </li>
+                  <li> Single context uniprocessors </li>
+                </ol>
+              </li>
+              <li> SIMD
+                <ol>
+                  <li> Single instruction stream, multiple data streams
+                  </li>
+                  <li> Exploits data parallelism </li>
+                  <li> Example: Thinking Machines CM </li>
+                </ol>
+              </li>
+              <li> MISD
+                <ol>
+                  <li> Multiple instruction stream, single data stream </li>
+                  <li> Machine pipeline </li>
+                  <li> Example: Intel iWarp (systolic array), streaming
+processors </li>
+                </ol>
+              </li>
+              <li> MIMD
+                <ol>
+                  <li> Multiprocessors </li>
+                  <li> Multithreaded processors </li>
+                  <li> Parallel programming and multiprogramming </li>
+                  <li> Relies on control parallelism; execute and
+synchronize different asynchronous threads of control </li>
+                  <li> Example: Most processor companies have MP
+configurations </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Multiprocessors
+            <ol>
+              <li> Low-end
+                <ol>
+                  <li> Bus-based
+                    <ol>
+                      <li> Simple, but Bus is a bottleneck </li>
+                      <li> Simple cache coherency protocol <i>(e.g.
+snooping)</i> </li>
+                    </ol>
+                  </li>
+                  <li> Physically centralized memory </li>
+                  <li> Uniform memory access (UMA) </li>
+                  <li> Examples: Sequent, Alpha-, PowerPC-, or
+SPARC-based servers </li>
+                </ol>
+              </li>
+              <li> High-end
+                <ol>
+                  <li> Higher bandwidth, multiple-path interconnect
+                    <ol>
+                      <li> More scalable </li>
+                      <li> More complex cache coherency protocol (if
+shared memory) </li>
+                      <li> longer latencies </li>
+                    </ol>
+                  </li>
+                  <li> Physically distributed memory </li>
+                  <li> Non-uniform memory access (NUMA) </li>
+                  <li> Could have processor clusters </li>
+                  <li> Examples: SGI, Convex, Cray, IBM, Intel </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+        </ol>
+      </li>
+      <li> Cache Coherency
+        <ol>
+          <li> Overview
+            <ol>
+              <li> The most current value for an address is determined
+by the last write </li>
+              <li> All reading processors must get the current value. </li>
+              <li> The Problem
+                <ol>
+                  <li> Update from a writing processor is not known to
+other processors </li>
+                </ol>
+              </li>
+              <li> Cache coherency protocol (is?)
+                <ol>
+                  <li> Mechanism for maintaining cache coherency </li>
+                  <li> Coherency state is associated with a block of
+data </li>
+                  <li> Bus/interconnect data on shared data change the
+state (for?)
+                    <ol>
+                      <li> The processor that initiates the operation </li>
+                      <li> For other processors that have the data of
+the operation resident in their caches </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Write-invalidate
+            <ol>
+              <li> Processor obtains exclusive access for write
+(becomes the "owner") by invalidating data in other processors' caches </li>
+              <li> A coherency miss is when the invalidation misses (<i>ie
+fails)</i> </li>
+              <li> Cache-to-cache transfers (are good for?)
+                <ol>
+                  <li> Multiple writes to the same word or block by a
+single processor </li>
+                  <li> Migratory sharing from processor to processor </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Write-update
+            <ol>
+              <li> Broadcast each write to actively shared data </li>
+              <li> Each processor with a copy snoops/takes the data </li>
+              <li> Good for inter-process communication (IPC) </li>
+            </ol>
+          </li>
+          <li> Implementations
+            <ol>
+              <li> Snooping
+                <ol>
+                  <li> Used with low-end multiprocessors
+(characteristics?)
+                    <ol>
+                      <li> Few processors </li>
+                      <li> Centralized memory </li>
+                      <li> Bus based </li>
+                    </ol>
+                  </li>
+                  <li> Snooping Implementation details
+                    <ol>
+                      <li> Distributed implementation: responsibility
+for maintaining coherence lies with each cache (a distributed coherency
+protocol has?)
+                        <ol>
+                          <li> Coherency state associated with each
+cache block </li>
+                          <li> Each snoop maintaining coherency for its
+own cache </li>
+                        </ol>
+                      </li>
+                      <li> How the bus is used&nbsp;
+                        <ol>
+                          <li> As a broadcast medium </li>
+                          <li> Entire coherency operation is atomic
+w.r.t. other processors (how?)
+                            <ol>
+                              <li> Keep-the-bus protocol: Master holds
+the bus until the entire operation has completed </li>
+                              <li> <i>-or- </i>Split-transaction
+buses (which do what?)
+                                <ol>
+                                  <li> Have separate request and
+response phases </li>
+                                  <li> State value indicating that an
+operation is in progress </li>
+                                  <li> Do not initiate another
+operation for a block that has one in progress </li>
+                                </ol>
+                              </li>
+                            </ol>
+                          </li>
+                        </ol>
+                      </li>
+                      <li> Snoop on the highest level cache
+                        <ol>
+                          <li> Another reason L2 is physically accessed
+                          </li>
+                          <li> Property of inclusion (is?)
+                            <ol>
+                              <li> All blocks in L1 are in L2 </li>
+                              <li> Therefore only have to snoop in L2 </li>
+                              <li> May need to update update L1 if
+change L2 state </li>
+                            </ol>
+                          </li>
+                        </ol>
+                      </li>
+                      <li> Separate tags &amp; state for snoop lookups
+                        <ol>
+                          <li> Processor and snoop communicate for a
+state or tag change </li>
+                        </ol>
+                      </li>
+                      <li> An example <i>of an invalidation-based
+snooping implementation</i>
+                        <ol>
+                          <li> Each cache block is in one of three
+states&nbsp;
+                            <ol>
+                              <li> Shared
+                                <ol>
+                                  <li> Clean in all caches and
+up-to-date in memory </li>
+                                  <li> Block can be read by any
+processor </li>
+                                </ol>
+                              </li>
+                              <li> Exclusive
+                                <ol>
+                                  <li> Dirty in exactly one cache </li>
+                                  <li> Only the corresponding processor
+can write to it (it's the owner of the block) </li>
+                                </ol>
+                              </li>
+                              <li> Invalid
+                                <ol>
+                                  <li> Block contains no valid data </li>
+                                  <li> <i>Distinct states so that
+block can be claimed by any processor</i> </li>
+                                </ol>
+                              </li>
+                            </ol>
+                          </li>
+                          <li> State transitions for a given cache
+block
+                            <ol>
+                              <li> Transitions caused by?
+                                <ol>
+                                  <li> Events caused by the requesting
+processor (examples?)
+                                    <ol>
+                                      <li> Read miss </li>
+                                      <li> Write miss </li>
+                                      <li> Write on shared block </li>
+                                    </ol>
+                                  </li>
+                                  <li> Events caused by snoops of other
+caches (examples?)
+                                    <ol>
+                                      <li> Read miss by P1 makes P2's
+owned block change from exclusive to shared </li>
+                                      <li> Write miss by P1 makes P2's
+owned block change from exclusive to invalid </li>
+                                    </ol>
+                                  </li>
+                                </ol>
+                              </li>
+                            </ol>
+                          </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+              <li> Directory
+                <ol>
+                  <li> Used with higher-end multiprocessors
+(characteristics?)
+                    <ol>
+                      <li> More processors </li>
+                      <li> Distributed memory </li>
+                      <li> Multi-path interconnect
+                        <ol>
+                          <li> Point to point communication </li>
+                          <li> Snooping with broadcasting is wasteful
+of the parallel communication resource </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                  <li> Centralized for each address: responsibility for
+maintaining coherence lies with the directory for each address </li>
+                  <li> Each processor (or cluster of processors) has
+it's own memory </li>
+                  <li> A processor has fast access to its local memory
+and slower access to 'remote' memory located at other processors (term
+for this?)
+                    <ol>
+                      <li> NUMA Non-Uniform Memory Access </li>
+                    </ol>
+                  </li>
+                  <li> An example <i>of an invalidation-based
+directory implementation</i>
+                    <ol>
+                      <li> Directory tracks state of cache blocks
+(which are one?)
+                        <ol>
+                          <li> Shared
+                            <ol>
+                              <li> At least one processor has the block
+and it is up-to-date </li>
+                              <li> Block can be read by any processor </li>
+                            </ol>
+                          </li>
+                          <li> Exclusive
+                            <ol>
+                              <li> One processor (the owner) has the
+data cached and memory is stale </li>
+                              <li> Only that processor can write to it </li>
+                            </ol>
+                          </li>
+                          <li> Invalid
+                            <ol>
+                              <li> No processor has the data cached and
+the memory is up-to-date </li>
+                            </ol>
+                          </li>
+                        </ol>
+                      </li>
+                      <li> Directory data details
+                        <ol>
+                          <li> A bit vector in which a 1 means the
+processor has cached the data </li>
+                          <li> Write bit to indicate if exclusive </li>
+                          <li> Different roles that directory blocks
+play during an operation
+                            <ol>
+                              <li> Home node: the memory location of
+the requested data </li>
+                              <li> Local node: where the memory request
+initiated </li>
+                              <li> Remote node: an alternate location
+for the data if this processor has requested and cached it </li>
+                            </ol>
+                          </li>
+                        </ol>
+                      </li>
+                      <li> Messages used for satisfying a memory
+request
+                        <ol>
+                          <li> Messages sent between different types of
+nodes in point-to-point communication </li>
+                          <li> Messages get explicit replies </li>
+                        </ol>
+                      </li>
+                      <li> Simplifying assumptions
+                        <ol>
+                          <li> Processor blocks until the access is
+complete </li>
+                          <li> Messages processed in the order that
+they're received </li>
+                        </ol>
+                      </li>
+                      <li> Finite State Machine for a Cache block
+                        <ol>
+                          <li> States are identical to snooping
+protocol </li>
+                          <li> Transactions are similar
+                            <ol>
+                              <li> Read &amp; Write misses sent to the
+home directory </li>
+                              <li> Invalidate and data fetch requests
+to the node with the data in place of broadcasted read/writes </li>
+                            </ol>
+                          </li>
+                        </ol>
+                      </li>
+                      <li> Finite State Machine for a Memory block
+                        <ol>
+                          <li> Same states as FSM for cache block </li>
+                          <li> Tracks all copies of a memory block </li>
+                          <li> Makes two state changes
+                            <ol>
+                              <li> Update coherency state </li>
+                              <li> Alter the number of sharers in the
+sharing set </li>
+                            </ol>
+                          </li>
+                        </ol>
+                      </li>
+                      <li> False sharing (<i>I believe this problem is
+specific to Directory based protocols)</i>
+                        <ol>
+                          <li> Processors read and write to different
+words in a shared cache block
+                            <ol>
+                              <li> Coherency is maintained on a
+per-block basis
+                                <ol>
+                                  <li> Processes share cache blocks,
+not data </li>
+                                  <li> Block ownership bounces between
+processor caches </li>
+                                </ol>
+                              </li>
+                            </ol>
+                          </li>
+                          <li> Impact aggravated by?
+                            <ol>
+                              <li> Block size (why?)
+                                <ol>
+                                  <li> <i>The larger the block, the
+more likely two processors are each writing to different words within
+the same block</i> </li>
+                                </ol>
+                              </li>
+                              <li> Cache size (why?)
+                                <ol>
+                                  <li> <i>The larger the cache, the
+longer the access time, and more likely this race condition is
+experienced</i> </li>
+                                </ol>
+                              </li>
+                              <li> Large miss penalty (why?)
+                                <ol>
+                                  <li> <i>The larger the miss penalty,
+the longer the bouncing of block ownership takes</i> </li>
+                                </ol>
+                              </li>
+                            </ol>
+                          </li>
+                          <li> Reduced by?
+                            <ol>
+                              <li> Coherence protocols (where coherence
+is tracked per sub-block) (which does?)
+                                <ol>
+                                  <li> Let's cache blocks become
+incoherent as long as there is only false sharing. </li>
+                                  <li> Make them coherent if any
+processors are true sharing. </li>
+                                </ol>
+                              </li>
+                              <li> Compiler optimizations (group &amp;
+transpose, cache block padding) <i>(what does this mean?)</i> </li>
+                              <li> Cache conscious programming w.r.t.
+initial data structure layout </li>
+                            </ol>
+                          </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+              <li> Other high-end implementations
+                <ol>
+                  <li> No caches (1<sup>st</sup> Cray MTA) </li>
+                  <li> Disallow caching of shared data (Cray 3TD) </li>
+                  <li> Software coherence (research machines) </li>
+                  <li> HW directories that record cache block state
+(most others) </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+        </ol>
+      </li>
+      <li> Synchronization
+        <ol>
+          <li> Overview
+            <ol>
+              <li> Coherency protocols guarantee that a reading
+processor (thread) sees the most current update to shared data </li>
+              <li> Coherency protocols do not:
+                <ol>
+                  <li> Make sure only one thread accesses the following
+at the same time:
+                    <ol>
+                      <li> Shared data. What does?
+                        <ol>
+                          <li> Critical sections: order thread access
+to shared data </li>
+                        </ol>
+                      </li>
+                      <li> Shared HW resource </li>
+                      <li> Shared SW resource </li>
+                    </ol>
+                  </li>
+                  <li> Force threads to start executing particular
+sections of code together. What do?
+                    <ol>
+                      <li> Barriers </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Critical sections
+            <ol>
+              <li> Definition:
+                <ol>
+                  <li> A sequence of code that only one thread can
+access at a time </li>
+                </ol>
+              </li>
+              <li> Provides:
+                <ol>
+                  <li> Mutual exclusion.
+                    <ol>
+                      <li> Which is:
+                        <ol>
+                          <li> A thread having exclusive access to a
+piece of code and the data that it accesses </li>
+                        </ol>
+                      </li>
+                      <li> And guarantees:
+                        <ol>
+                          <li> That only one thread can update the data
+at a time </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+              <li> To execute a critical section, a thread:
+                <ol>
+                  <li> Acquires a lock that guards it </li>
+                  <li> Executes the section's code </li>
+                  <li> Releases the lock </li>
+                </ol>
+              </li>
+              <li> The effect is:
+                <ol>
+                  <li> To order &amp; sequentialize (synchronize) the
+access of threads w.r.t. their accessing shared data </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Barriers
+            <ol>
+              <li> Definition
+                <ol>
+                  <li> A point in the program which all threads must
+reach before any thread can cross </li>
+                </ol>
+              </li>
+              <li> Properties:
+                <ol>
+                  <li> All threads, when reaching a barrier wait until
+all other threads arrive </li>
+                  <li> When all threads have arrive, they're released (<i>un-stalled</i>)
+at once (<i>atomically)</i> and begin executing the code beyond the
+barrier </li>
+                </ol>
+              </li>
+              <li> Example implementation:
+                <ol>
+                  <li> Set a lock-protected counter to the number of
+processors </li>
+                  <li> Each thread (assuming one thread per processor)
+decrements it <i>upon arrival</i> </li>
+                  <li> When the counter reaches 0, all threads have
+arrived and are released. </li>
+                </ol>
+              </li>
+              <li> Code that implements a barrier is:
+                <ol>
+                  <li> A critical section </li>
+                </ol>
+              </li>
+              <li> Useful for:
+                <ol>
+                  <li> Programs that execute in phases </li>
+                  <li> Synchronizing after a parallel loop </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Locking
+            <ol>
+              <li> Used to:
+                <ol>
+                  <li> facilitate access to a critical section </li>
+                </ol>
+              </li>
+              <li> Locking protocol
+                <ol>
+                  <li> A synchronization variable or lock:
+                    <ol>
+                      <li> 0: lock is available </li>
+                      <li> 1: lock is unavailable (because another
+thread holds it) </li>
+                    </ol>
+                  </li>
+                  <li> A thread obtains the lock before entering a
+critical section (sets it <i>from 0 </i>to 1)
+                    <ol>
+                      <li> Atomic exchange instruction
+                        <ol>
+                          <li> Atomic read-modify-write: swap a value
+in register and a value in memory in one operation
+                            <ol>
+                              <li> Set the register to 1 </li>
+                              <li> Swap the register value and the lock
+value in memory </li>
+                              <li> New register value determines
+whether the lock was gotten (<i>iff the new value is 0)</i> </li>
+                              <li> Also known as atomic
+read-modify-write a location in memory </li>
+                            </ol>
+                          </li>
+                          <li> Load-locked and Store Conditional
+                            <ol>
+                              <li> Performance problem with atomic
+read-modify-write.
+                                <ol>
+                                  <li> 2 memory operations in one </li>
+                                  <li> Must hold the bus until both
+operations complete </li>
+                                </ol>
+                              </li>
+                              <li> Here, a pair of instructions appears
+atomic </li>
+                              <li> Avoids the need for interruptible
+memory read &amp; write </li>
+                              <li> Steps:
+                                <ol>
+                                  <li> Load-locked returns the original
+(lock) value in memory </li>
+                                  <li> If the contents of the lock have
+not changed when the store conditional is executed, the store
+conditional and lock acquire were successful
+                                    <ol>
+                                      <li> Store conditional returns 1
+iff it was successful </li>
+                                    </ol>
+                                  </li>
+                                </ol>
+                              </li>
+                              <li> Implemented with special processor
+registers
+                                <ol>
+                                  <li> Lock-flag register </li>
+                                  <li> Lock-address register </li>
+                                  <li> Steps:
+                                    <ol>
+                                      <li> Load-locked sets
+lock-address register to lock's memory address and lock-flag register
+to 1 </li>
+                                      <li> Store conditional returns
+lock-flag register value in the store register </li>
+                                      <li> Lock-flag register is
+cleared if <br>
+- The lock is written by another processor - Context switch or
+interrupt </li>
+                                    </ol>
+                                  </li>
+                                </ol>
+                              </li>
+                            </ol>
+                          </li>
+                          <li> Other examples
+                            <ol>
+                              <li> Test and set: tests a value in
+memory and sets it to 1 <i>iff the test passed</i> </li>
+                              <li> Fetch and increment/decrement:
+returns the value of a memory location + 1 </li>
+                            </ol>
+                          </li>
+                          <li> Atomic exchange in practice
+                            <ol>
+                              <li> Alpha: Load-locked, store
+conditional </li>
+                              <li> UltraSPARCs (v9 Arch.): several
+primitives, compare and swap, test and set, etc. </li>
+                              <li> Pentium Pro: compare and swap </li>
+                            </ol>
+                          </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                  <li> A thread releases the lock before it leaves the
+critical section
+                    <ol>
+                      <li> Store a 0 in the lock </li>
+                      <li> <i>Should it release it immediately after
+it leaves the critical section?</i> </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Synchronization APIs<br>
+- User-level software synchronization routines constructed with atomic
+hardware primitives
+            <ol>
+              <li> Spin locks
+                <ol>
+                  <li> Busywaiting until thread obtains the lock
+                    <ol>
+                      <li> Contention with the atomic exchanges causes
+invalidation (for the write) and coherency misses (for the rereads) </li>
+                      <li> Avoided if we separate reading the lock and
+testing it, from setting it </li>
+                      <li> Spinning done in cache rather than over the
+bus. </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+              <li> Blocking locks
+                <ol>
+                  <li> Block the thread after a certain number of
+spins. </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Synchronization performance
+            <ol>
+              <li> An example overall coherence and synchronization
+strategy
+                <ol>
+                  <li> Design cache coherency protocol for little
+interprocessor contention for the locks </li>
+                  <li> Add techniques to avoid performance loss if
+there is a contention for the lock while still providing low latency in
+the case of no contention </li>
+                </ol>
+              </li>
+              <li> A race condition for acquiring an unlocked lock
+                <ol>
+                  <li> O(p^2) bus transactions for p contending
+processors (in write-invalidate <i>coherence model</i>) </li>
+                  <li> Solutions
+                    <ol>
+                      <li> Exponential back-off (software solution)
+                        <ol>
+                          <li> Each processor retries at a different
+time </li>
+                          <li> Each retry done an exponential amount of
+time later </li>
+                        </ol>
+                      </li>
+                      <li> Queuing locks (hardware solution)
+                        <ol>
+                          <li> Lock is passed from unlocking processor
+to waiting processor </li>
+                          <li> Also addresses fairness (<i>first come
+first serve)</i> </li>
+                          <li> <i>Does this entail a race condition
+for multiple threads entering the queue?</i> </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+        </ol>
+      </li>
+    </ol>
+  </li>
+  <li> Multithreaded Processors
+    <ol>
+      <li> Overview
+        <ol>
+          <li> Motivation: Processors not executing at their hardware
+potential
+            <ol>
+              <li> Late 70's: performance lost to memory latency </li>
+              <li> 90's Performance not in line with the increasingly
+complex hardware as well <i>as loss to memory latency</i>
+                <ol>
+                  <li> Increase in instruction issue bandwidth </li>
+                  <li> Increase in number of functional units </li>
+                  <li> Out-of-order execution </li>
+                  <li> Techniques for decreasing/hiding branch and
+memory latencies </li>
+                  <li> Still, processor utilization was decreasing and
+instruction throughput not increasing in proportion to the issue width </li>
+                </ol>
+              </li>
+              <li> Major cause is the lack of instruction-level
+parallelism in a single executing thread </li>
+              <li> Therefore need a more general solution than a
+smarter cache and/or more accurate branch predictor </li>
+            </ol>
+          </li>
+          <li> MTPs Can increase the pool of independent instructions
+and consequently address multiple causes of processor stalling. By:
+            <ol>
+              <li> Holding processor state for more than one thread of
+execution. Including:
+                <ol>
+                  <li> Registers </li>
+                  <li> Program counter </li>
+                  <li> Hardware context, <i>ie</i> each thread's state
+                  </li>
+                </ol>
+              </li>
+              <li> Execute the instruction stream from multiple threads
+without SW context switching </li>
+              <li> Utilize thread-level parallelism to compensate for a
+lack in ILP </li>
+            </ol>
+          </li>
+          <li> Traditional multithreaded processors HW switch to a
+different context to avoid processor stalls </li>
+        </ol>
+      </li>
+      <li> Styles of Multithreaded processors
+        <ol>
+          <li> Two traditional styles
+            <ol>
+              <li> Coarse-grain multithreading
+                <ol>
+                  <li> Switch on a long-latency operations (e.g. L2
+cache miss) </li>
+                  <li> Another thread executes while the miss is
+handled </li>
+                  <li> Modest increase in the instruction throughput
+                    <ol>
+                      <li> Doesn't hide latency of short-latency
+operations </li>
+                      <li> No switch if no long-latency operations </li>
+                      <li> Need to fill the pipeline on a switch </li>
+                    </ol>
+                  </li>
+                  <li> Potentially no slowdown to the thread with the
+miss<br>
+If stall is long &amp; switches back fairly promptly </li>
+                  <li> Examples<br>
+- HEP, IBM RS64 III </li>
+                </ol>
+              </li>
+              <li> Fine-grain multithreading
+                <ol>
+                  <li> Can switch to a different thread each cycle
+(usually round robin) </li>
+                  <li> Hides latencies of all kinds </li>
+                  <li> Larger increase in instruction throughput but
+slows down the execution of each thread </li>
+                  <li> Example: Cray (Tera) MTA
+                    <ol>
+                      <li> Goals
+                        <ol>
+                          <li> The appearance of uniform memory access </li>
+                          <li> Lightweight synchronization </li>
+                          <li> Heterogeneous parallelism </li>
+                        </ol>
+                      </li>
+                      <li> Features
+                        <ol>
+                          <li> Can switch to a different thread each
+cycle
+                            <ol>
+                              <li> Switches to ready threads only </li>
+                            </ol>
+                          </li>
+                          <li> Up to 128 HW contexts
+                            <ol>
+                              <li> Lots of latency to hide, mostly from
+the multi-hop interconnection network </li>
+                              <li> Average instruction latency for
+computation: 22 cycles (i.e., 22 instruction streams needed to keep
+functional units busy) </li>
+                              <li> Average instruction latency
+including memory: 120 to 200 cycles </li>
+                            </ol>
+                          </li>
+                          <li> Processor state for all 128 contexts
+                            <ol>
+                              <li> GPRs (total of 4K registers!) </li>
+                              <li> Status registers (includes the PC) </li>
+                              <li> Branch target registers/stream </li>
+                            </ol>
+                          </li>
+                          <li> No processor-side data caches
+                            <ol>
+                              <li> Increases the latency for data
+accesses but reduces the cariation between ops </li>
+                              <li> To avoid having to keep caches
+coherent </li>
+                              <li> Memory-side buffers instead </li>
+                            </ol>
+                          </li>
+                          <li> L1 &amp; L2 instruction caches
+                            <ol>
+                              <li> Instruction accesses are more
+predictable and have no coherency problem </li>
+                              <li> Prefetch fall-through and target
+code </li>
+                            </ol>
+                          </li>
+                          <li> Trade-off between avoiding memory bank
+conflicts and exploiting spatial locality for data
+                            <ol>
+                              <li> Conflicts
+                                <ol>
+                                  <li> Memory distributed among
+hardware contexts </li>
+                                  <li> Memory addresses are randomized
+to avoid conflicts<br>
+Want to fully utilize all memory bandwidth </li>
+                                </ol>
+                              </li>
+                              <li> Locality
+                                <ol>
+                                  <li> Run-time system can confine
+consecutive virtual addresses to a single (close-by) memory unit
+                                    <ol>
+                                      <li> Used mainly for the stack </li>
+                                    </ol>
+                                  </li>
+                                </ol>
+                              </li>
+                            </ol>
+                          </li>
+                          <li> Tagged memory
+                            <ol>
+                              <li> Indirectly set full/empty bits to
+prevent data races
+                                <ol>
+                                  <li> Prevents a consumer/producer
+from loading/overwriting a value before a producer/consumer has
+written/read it </li>
+                                  <li> Example for the consumer:
+                                    <ol>
+                                      <li> Set to empty when producer
+instruction starts executing </li>
+                                      <li> Consumer instructions block
+if try to read the producer value </li>
+                                      <li> Set to full when the
+producer writes the value </li>
+                                      <li> Consumers can now read a
+valid value </li>
+                                    </ol>
+                                  </li>
+                                </ol>
+                              </li>
+                              <li> Explicitly set full/empty bits for
+thread synchronization
+                                <ol>
+                                  <li> Primarily used for accessing
+shared data
+                                    <ol>
+                                      <li> Lock: read memory location
+and set to empty </li>
+                                      <li> Other readers are blocked </li>
+                                      <li> Unlock: Write and set to
+full </li>
+                                    </ol>
+                                  </li>
+                                </ol>
+                              </li>
+                            </ol>
+                          </li>
+                          <li> No paging
+                            <ol>
+                              <li> Want pages pinned down in memory </li>
+                              <li> Page size is 256M </li>
+                            </ol>
+                          </li>
+                          <li> Forward bit
+                            <ol>
+                              <li> Memory contents interpreted as a
+pointer and dereferenced </li>
+                              <li> Used for GC and null reference
+checking </li>
+                            </ol>
+                          </li>
+                          <li> User-mode trap handlers
+                            <ol>
+                              <li> Lighter weight </li>
+                              <li> Used for fatal exceptions, overflow,
+normalizing floating point numbers </li>
+                            </ol>
+                          </li>
+                        </ol>
+                      </li>
+                      <li> Compiler support
+                        <ol>
+                          <li> VLIW instructions
+                            <ol>
+                              <li> Memory/arithmetic/branch </li>
+                              <li> Load/store architecture </li>
+                              <li> Need a good code scheduler </li>
+                            </ol>
+                          </li>
+                          <li> Memory dependence look-ahead
+                            <ol>
+                              <li> Field in a memory instruction that
+specifies the number of independent memory ops that follow </li>
+                              <li> Guarantees nonstalling instruction
+choice </li>
+                              <li> Improves memory parallelism </li>
+                            </ol>
+                          </li>
+                          <li> Branch handling
+                            <ol>
+                              <li> Special instruction to store a
+branch target in a register before the branch is executed. </li>
+                              <li> Can start prefetching the target
+code. </li>
+                            </ol>
+                          </li>
+                        </ol>
+                      </li>
+                      <li> Run-time support
+                        <ol>
+                          <li> Number of executing threads
+                            <ol>
+                              <li> Protection domain: group of threads
+executing in the same virtual address space </li>
+                              <li> RT sets the maximum number of thread
+contexts (instruction streams) a domain is allowed (compiler estimate) </li>
+                              <li> Domain can create and kill threads
+within that limit, depending on its need for them </li>
+                            </ol>
+                          </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+              <li> <i>Fills in vertical waste, in the issue pipeline,
+experienced by Superscalars</i> </li>
+            </ol>
+          </li>
+          <li> Third style of multithreading, different concept
+            <ol>
+              <li> Simultaneous multithreading (SMT)
+                <ol>
+                  <li> Overview
+                    <ol>
+                      <li> Issue multiple instructions from multiple
+threads each cycle </li>
+                      <li> No hardware context switching </li>
+                      <li> Same-cycle multithreading </li>
+                      <li> Huge boost in instruction throughput with
+less degradation to individual threads. </li>
+                      <li> Combines designs from:
+                        <ol>
+                          <li> Out-of-order superscalar processors </li>
+                          <li> Traditional multithreaded processors </li>
+                          <li> Thereby converting TLP to ILP, where
+threads share almost all HW resources </li>
+                        </ol>
+                      </li>
+                      <li> Performance
+                        <ol>
+                          <li> Multiprogramming workload<br>
+- 2.5X on SPEC95, 4X on SPEC2000 </li>
+                          <li> Parallel Programs<br>
+- ~1.7X on SPLASH2 </li>
+                          <li> Commercial databases - 2-3X on TPC B;
+1.5X on TPC D </li>
+                          <li> Web servers and OS<br>
+- 4X on Apache and Digital Unix </li>
+                        </ol>
+                      </li>
+                      <li> Sound familiar? Technology transfer
+lead/leading to
+                        <ol>
+                          <li> 2-context Intel Hyperthreading </li>
+                          <li> 4-context IBM Power5 </li>
+                          <li> 2-context Sun UltraSPARC on a
+4-processor CMP </li>
+                          <li> 4-context Compaq 21464 </li>
+                          <li> Network processor and mobile device
+start-ups </li>
+                          <li> Others in the wings </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                  <li> Three primary Architecture goals
+                    <ol>
+                      <li> Achieve significant throughput gains with
+multiple threads </li>
+                      <li> Minimize the performance impact on a single
+thread executing alone </li>
+                      <li> Minimize the microarchitectural impact on a
+conventional out-of-order superscalar design </li>
+                    </ol>
+                  </li>
+                  <li> Implementing SMT
+                    <ol>
+                      <li> No special HW for scheduling instructions
+from multiple threads
+                        <ol>
+                          <li> Use the out-of-order renaming and
+instruction scheduling mechanisms </li>
+                          <li> Physical register pool model </li>
+                          <li> Renaming hardware eliminates false
+dependencies both within a thread (as with a superscalar) and between
+threads </li>
+                        </ol>
+                      </li>
+                      <li> How it works:
+                        <ol>
+                          <li> Map thread-specific architectural
+registers onto a pool of thread-independent physical registers </li>
+                          <li> Operands are thereafter called by their
+physical names </li>
+                          <li> An instruction is issued when its
+operands become available and a functional unit is free </li>
+                          <li> Instruction scheduler doesn't consider
+thread Ids when dispatching instructions to functional units (unless
+threads are prioritized) </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                  <li> From Superscaler to SMT
+                    <ol>
+                      <li> Extra pipeline stages for accessing
+thread-shared register files<br>
+- 8 threads * 32 registers + renaming registers </li>
+                      <li> SMT instruction fetcher (ICOUNT)
+                        <ol>
+                          <li> Fetch from 2 threads each cycle
+                            <ol>
+                              <li> Count the number of instructions for
+each thread in the pre-execution stages </li>
+                              <li> Pick the 2 threads with the lowest
+numbers. <i>Highest?</i> </li>
+                            </ol>
+                          </li>
+                          <li> In essence fetching form the two highest
+throughput threads </li>
+                        </ol>
+                      </li>
+                      <li> Per-thread hardware
+                        <ol>
+                          <li> Small stuff </li>
+                          <li> All part of current out-of-order
+processors </li>
+                          <li> None endangers the cycle time </li>
+                          <li> Other per-thread processor state:
+                            <ol>
+                              <li> Program counters </li>
+                              <li> Return stacks </li>
+                              <li> Thread Ids, e.g. <i>to go in</i>
+Branch Target Buffer and Translation Lookaside Buffer entries </li>
+                            </ol>
+                          </li>
+                          <li> Per-thread bookkeeping:
+                            <ol>
+                              <li> Instruction queue flush </li>
+                              <li> Instruction retirement </li>
+                              <li> Trapping </li>
+                            </ol>
+                          </li>
+                          <li> This is why there is only a 15% increase
+to the Alpha 21464 chip area </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                  <li> Implementing SMT
+                    <ol>
+                      <li> Thread-shared hardware:
+                        <ol>
+                          <li> Fetch buffers </li>
+                          <li> Branch prediction structures </li>
+                          <li> Instruction queues </li>
+                          <li> Functional units </li>
+                          <li> Active list </li>
+                          <li> All caches and TLBs </li>
+                          <li> Store buffers and Miss Status Holding
+Registers </li>
+                          <li> This is why there is only about 1.5%
+single thread performance degradation </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                  <li> Architecture research
+                    <ol>
+                      <li> <i>Proof of </i>concept &amp; potential of
+simultaneous multithreading </li>
+                      <li> Designing the microarchitecture<br>
+Straightforward extension of out-of-order superscalars </li>
+                      <li> Instruction fetch thread chooser<br>
+40% faster than round-robin </li>
+                      <li> The lockbox for cheap synchronization<br>
+Orders of magnitude faster<br>
+Can parallelize previously unparallelizable code </li>
+                      <li> Software-directed register deallocation<br>
+Large register file performance (<i>hit rate, not access time) </i>with
+small register file </li>
+                      <li> Mini-threads<br>
+Large SMT (<i>should be OOE Superscalar?) </i>performance with small
+SMTs </li>
+                      <li> SMT instruction speculation
+                        <ol>
+                          <li> Don't execute as far down a wrong path </li>
+                          <li> Speculative instructions don't get as
+far down the pipeline </li>
+                          <li> Speculation keeps a good thread mis in
+the instruction queue<br>
+Most important factor for performance </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                  <li> Compiler research
+                    <ol>
+                      <li> Tuning compiler optimizations for SMT<br>
+Data decompositions: use cyclic iteration scheduling <br>
+Tiling (<i>aka Blocking)</i>: Use cyclic tiling; no tile size sweet
+spot </li>
+                      <li> Communicate last-use information to the HW
+for early register deallocation<br>
+Now need fewer renaming registers </li>
+                      <li> Compiling for fewer registers per thread<br>
+Surprisingly little additional spill code (avg. 3%) </li>
+                    </ol>
+                  </li>
+                  <li> OS Research
+                    <ol>
+                      <li> Analysis of OS behaviour on SMT
+Kernel-kernel conflicts in instruction cache and data cache and branch
+mispredictions ameliorated by SMT instruction issue and thread-sharing
+in HW </li>
+                      <li> OS/runtime support for mini-threads
+Dedicated server: recompile OS for fewer registers Multiprogrammed
+environment: multiple versions </li>
+                      <li> OS/runtime support for executing threaded
+programs<br>
+Page mapping, stack offsetting, dynamic memory allocation,
+synchronization </li>
+                    </ol>
+                  </li>
+                  <li> Others are now carrying the ball, looking into
+                    <ol>
+                      <li> Fault detection &amp; recovery </li>
+                      <li> Thread-level speculations </li>
+                      <li> Instruction and data prefetching </li>
+                      <li> Instruction issue hardware design </li>
+                      <li> Thread scheduling and thread priority </li>
+                      <li> Single-thread execution </li>
+                      <li> SMT-CMP hybrids </li>
+                      <li> Power considerations </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+              <li> <i>Fills in horizontal waste, in the issue
+pipeline, experienced by traditional Multithreading</i> </li>
+            </ol>
+          </li>
+        </ol>
+      </li>
+    </ol>
+  </li>
+  <li> Dataflow Machines
+    <ol>
+      <li> Von Neumann Execution model
+        <ol>
+          <li> Steps
+            <ol>
+              <li> Fetch
+                <ol>
+Send PC to memory Transfer instruction from memory to CPU Increment PC
+                </ol>
+              </li>
+              <li> Decode and read ALU input sources </li>
+              <li> Execute
+                <ol>
+An ALU operation Memory operation <i>or </i>Branch target calculation
+                </ol>
+              </li>
+              <li> Store the result in a register
+                <ol>
+From the ALU or memory
+                </ol>
+              </li>
+              <li> Repeat </li>
+            </ol>
+          </li>
+          <li> Program is linear series of addressable instructions
+            <ol>
+              <li> Next instruction to be executed is pointed to by the
+PC </li>
+              <li> Send PC to memory </li>
+              <li> Next instruction to execute depends on what happened
+during the execution of the current instruction </li>
+            </ol>
+          </li>
+          <li> Operands reside in a centralized, global memory (GPRs) </li>
+        </ol>
+      </li>
+      <li> Dataflow Execution Model
+        <ol>
+          <li> Steps
+            <ol>
+              <li> Instructions are already in the processors </li>
+              <li> Operands arrive from a producer instruction via a
+network </li>
+              <li> Check to see if all an instruction's operands are
+there </li>
+              <li> Execute
+                <ol>
+An ALU operation Memory operation <i>or</i> branch target calculation
+                </ol>
+              </li>
+              <li> Send the result To the consumer instructions or
+memory </li>
+            </ol>
+          </li>
+          <li> Execution is driven by the availability of input
+operands
+            <ol>
+              <li> Operands are consumed </li>
+              <li> Output is generated </li>
+              <li> No program counter </li>
+            </ol>
+          </li>
+          <li> Result operands are passed directly to consumer No
+register file </li>
+          <li> Motivation Exploit ILP on a massive scale More fully
+utilize all processing elements
+            <ol>
+              <li> Possible if:
+                <ol>
+                  <li> Expose instruction-level parallelism by using a
+functional-style programming language No side effects, only
+restrictions were producer-consumer </li>
+                  <li> Scheduled code for execution on the hardware
+greedily </li>
+                  <li> Hardware support for data-driven execution </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> All computation is data-driven
+            <ol>
+              <li> Binary is represented as a directed graph Nodes are
+operations Values travel on arcs </li>
+              <li> <i>A WaveScalar instruction consists of an opCode,
+and bits corresponding to a destination1 and destination2</i> </li>
+            </ol>
+          </li>
+          <li> Data-dependent operations are connected, producer to
+consumer </li>
+          <li> Code and initial values loaded into memory </li>
+          <li> Execute according to the Dataflow firing rule
+            <ol>
+              <li> When operands of an instruction have arrived on all
+input arcs, instruction may execute </li>
+              <li> Value on input arcs is removed </li>
+              <li> Computed value placed on output arc </li>
+            </ol>
+          </li>
+        </ol>
+      </li>
+      <li> Control<br>
+Convert control dependence to data dependence with value-steering
+instructions
+        <ol>
+          <ol>
+            <li> Steer<br>
+Execute one path after condition variable is known </li>
+            <li> Merge Execute both paths &amp; pass values at end </li>
+          </ol>
+        </ol>
+      </li>
+      <li> Instruction Set Architecture
+        <ol>
+          <li> Instructions Operation<i>s</i> Destination instructions </li>
+          <li> Data packets, called Tokens
+            <ol>
+              <li> Value </li>
+              <li> Tag to identify the operand instance and match it
+with its fellow operands in the same dynamic instruction instance
+                <ol>
+                  <li> Architecture dependent
+                    <ol>
+                      <li> Instruction number </li>
+                      <li> Iteration number </li>
+                      <li> Activation/context number (for functions,
+especially recursive) </li>
+                      <li> Thread number </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+              <li> Dataflow computer executes a program by receiving,
+matching, and sending out tokens </li>
+            </ol>
+          </li>
+        </ol>
+      </li>
+      <li> Types of Dataflow Computers
+        <ol>
+          <li> Static<br>
+One copy of each instruction No simultaneously active iterations, no
+recursion </li>
+          <li> Dynamic<br>
+Multiple copies of each instruction Better performance<br>
+Gate counting technique to prevent instruction explosion
+            <ol>
+              <li> K-bounding
+                <ol>
+                  <li> Extra instruction with K tokens on its input
+arc; passes a token to 1<sup>st</sup> instruction of the loop body </li>
+                  <li> 1<sup>st</sup> instruction of loop body consumes
+a token (needs one extra operand to execute) </li>
+                  <li> last instruction in loop body produces another
+token at end of iteration </li>
+                  <li> limits active iterations to K </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+        </ol>
+      </li>
+      <li> Prototypical Early Dataflow Computer
+        <ol>
+          <li> Original implementations were centralized </li>
+          <li> Performance cost Large token store Long wires
+Arbitration both for Processing Elements and storing of result </li>
+        </ol>
+      </li>
+      <li> Problems with Dataflow Computers
+        <ol>
+          <li> Language compatibility
+            <ol>
+              <li> Dataflow cannot guarantee a correct ordering of
+memory operations </li>
+              <li> Dataflow computer programmers could not use the
+mainstream programming languages, such as C </li>
+              <li> Developed special languages in which order didn't
+matter </li>
+            </ol>
+          </li>
+          <li> Scalability: large token store
+            <ol>
+              <li> Side-effect-free programming language with no
+mutable data structures
+                <ol>
+                  <li> Each update creates a new data structure </li>
+                  <li> 1000 tokens for 1000 data items even if the same
+value </li>
+                </ol>
+              </li>
+              <li> Aggravated by the state of processor technology at
+the time
+                <ol>
+                  <li> Delays in processing (only so many functional
+units, arbitration delays, etc.) meant delays in operand arrival </li>
+                  <li> Associative search impossible; accessed with
+slower hash function </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Partial Solutions<br>
+Led away from pure Dataflow execution
+            <ol>
+              <li> Data representation in memory:
+                <ol>
+                  <li> I-structures:<br>
+Write once, read many times<br>
+Early reads are deferred until the write </li>
+                  <li> M-structures<br>
+Multiple reads and writes, but they must alternate Reusable structures
+which could hold multiple values </li>
+                </ol>
+              </li>
+              <li> Local (register) storage for back-to-back
+instructions </li>
+              <li> Frames of sequential instruction execution
+                <ol>
+                  <li> Create "frames", each of which stored the data
+for on iteration or one thread </li>
+                  <li> Not have to search entire token store (offset to
+frame) </li>
+                  <li> Like having Dataflow execution among
+coarse-grain threads rather than instructions </li>
+                </ol>
+              </li>
+              <li> Physically partition the token store and place each
+partition with a Processing Element </li>
+            </ol>
+          </li>
+        </ol>
+      </li>
+      <li> WaveScalars
+        <ol>
+          <li> Overview
+            <ol>
+              <li> A Dataflow machine </li>
+              <li> Good at exploiting ILP </li>
+              <li> Data flow parallelism + traditional coarser-grained
+parallelism Cheap thread management </li>
+              <li> Low operand latency because of a hierarchical
+organization </li>
+              <li> Memory ordering enforced through wave-ordered memory<br>
+No special languages </li>
+            </ol>
+          </li>
+          <li> Motivation
+            <ol>
+              <li> Increasing disparity between computation (fast
+transistors) and communication (long wires) </li>
+              <li> Increasing circuit complexity </li>
+              <li> Decreasing fabrication reliability <i>in relation
+to increasing circuit complexity</i> </li>
+            </ol>
+          </li>
+          <li> Monolithic von Neumann processors
+            <ol>
+              <li> A phenomenal success today. But in 2016? </li>
+              <li> Performance <i>limitations</i> Centralized
+processing and control<br>
+Long wires </li>
+              <li> Complexity<br>
+40-75% of "design" time is design verification </li>
+              <li> Defect tolerance<br>
+1 flaw renders it useless </li>
+            </ol>
+          </li>
+          <li> WaveScalar's microarchitecture
+            <ol>
+              <li> Features
+                <ol>
+                  <li> Good performance via distributed
+microarchitecture
+                    <ol>
+                      <li> Hundreds of PEs </li>
+                      <li> Data flow execution &acirc;&#8364;&#8220; no centralized
+control </li>
+                      <li> Short point-to-point (producer to consumer)
+operand communication </li>
+                      <li> Organized hierarchically for fast
+communication between neighboring PEs </li>
+                      <li> Scalable </li>
+                    </ol>
+                  </li>
+                  <li> Low design complexity through simple, identical
+PEs Design one and stamp out thousands </li>
+                  <li> Defect tolerance<br>
+Route around a bad PE </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+          <li> Hardware
+            <ol>
+              <li> Whole Chip Can hold 32K instructions<br>
+Normal memory Hierarchy Traditional directory-based cache coherence ~2
+cm^2 in 90 nm technology ~85 watts
+                <ol>
+                  <li> WaveScalar Processor<br>
+Grid of Clusters<br>
+Long distance communication<br>
+Dynamic routing<br>
+Grid-based network<br>
+2-cycle hop/cluster
+                    <ol>
+                      <li> Cluster<br>
+                        <i>Four domains grouped together<br>
+Level 1 data cache<br>
+Store buffer<br>
+Network switch</i>
+                        <ol>
+                          <li> Domain <br>
+                            <i>Four PEs in a pod <br>
+Connected by a CDB</i>
+                            <ol>
+                              <li> PEs in a Pod<br>
+                                <i>A pair of PEs</i><br>
+Share operand bypass network Back-to-back producer-consumer execution
+across PEs
+                                <ol>
+                                  <li> Processing Element (PE)
+                                    <ol>
+                                      <li> Simple, small (.5M
+transistors) </li>
+                                      <li> 5 stage pipeline<br>
+Receive input op<br>
+Match tags<br>
+Instruction schedule Execute<br>
+Send output </li>
+                                      <li> Holds 64 (decoded)
+instructions </li>
+                                      <li> 128-entry token store </li>
+                                      <li> 4-entry output buffer </li>
+                                    </ol>
+                                  </li>
+                                </ol>
+                              </li>
+                            </ol>
+                          </li>
+                        </ol>
+                      </li>
+                    </ol>
+                  </li>
+                </ol>
+              </li>
+            </ol>
+          </li>
+        </ol>
+      </li>
+    </ol>
+  </li>
+</ol>
+<script>
+ window.onload = function () {  compactMenu('myOutline',false,'&plusmn;', true); } 
+</script>
+</body>
+</html>

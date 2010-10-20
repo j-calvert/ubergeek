@@ -1,0 +1,22 @@
+Lam("x",RecordT[("l",IntT,Read)],
+RecordE[("l1",Get(Var("x"),"l")); ("l2",Var("x"))])
+Lam("x",RecordT[("l",IntT,Both)],
+RecordE[("l1",Get(Var("x"),"l")); ("l2",Var("x"))])
+
+In English, describe:
+• A situation where using the first function would typecheck but the second would not
+
+Either a situation where the typechecker would not terminate, because of say an
+application of this function in a letrec, or a situation where the Both access allows Var("x") to be 
+mutated into something that doesn't type check.
+
+• A situation where using the second function would typecheck but the first would not
+
+If we apply the Lam to a Set Var("x") the first one wouldn't typcheck because we'd have already inferred
+that "x" has Read only access.  The second one would have no problem with this.
+
+
+• How to use bounded polymorphism to extend our type system to overcome this code duplication
+
+We could apply subsumption on access modifiers, so that the type-checker would determine that 
+a record's field "is a" readable or writable only when it is inferred in the type check.

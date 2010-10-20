@@ -1,0 +1,78 @@
+// Successor predicates
+SuccTime(T0, T1)
+SuccTime(T1, T2)
+SuccTime(T2, T3)
+SuccTime(T3, T4)
+
+// Initial state
+In(City0,T0)
+!In(City1,T0)
+!In(City2,T0)
+!Visited(City0,T0)
+!Visited(City1,T0)
+!Visited(City2,T0)
+At(City0,Prod0)
+!At(City1,Prod0)
+!At(City2,Prod0)
+At(City1,Prod1)
+!At(City0,Prod1)
+!At(City2,Prod1)
+At(City2,Prod2)
+!At(City0,Prod2)
+!At(City1,Prod2)
+!Have(Prod0, T0)
+!Have(Prod1, T0)
+!Have(Prod2, T0)
+
+// Goal state
+In(City0, T4) 
+Have(Prod0,T4)
+Have(Prod1,T4)
+Have(Prod2,T4)
+
+
+/********** Expected results **********
+// there can be many solutions, but they should look like the following
+Drive(City0,City1,T0,T1)
+Drive(City1,City2,T1,T2)
+Drive(City2,City0,T2,T3)
+Visited(City0,T3)
+Visited(City0,T4)
+Visited(City1,T1)
+Visited(City1,T2)
+Visited(City1,T3)
+Visited(City1,T4)
+Visited(City2,T2)
+Visited(City2,T3)
+Visited(City2,T4)
+In(City0,T3)
+In(City1,T1)
+In(City2,T2)
+Buy(Prod0,City0,T3)
+Buy(Prod1,City1,T1)
+Buy(Prod2,City2,T2)
+Have(Prod1,T2)
+Have(Prod1,T3)
+Have(Prod2,T3)
+*/
+
+/**********  Walksat output **********
+// You should get roughly the same order of magnitude number of clauses
+CNF conversion took 0 secs
+Creating query predicates that are specified on command line...
+Set hard weight to 10
+creating mrf...
+number of grounded predicates = 302
+number of grounded clauses = 1103
+Time taken to construct MRF = 0.05 secs
+
+In the beginning: 
+Number of false clauses: 295
+Cost of false clauses: 2950
+Target cost: 0
+In the end: 
+Lowest num. of false clauses: 0
+Lowest cost of false clauses: 0
+Number of flips: 3637
+total time taken = 0.06 secs
+*/

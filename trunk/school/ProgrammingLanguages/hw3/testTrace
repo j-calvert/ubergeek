@@ -1,0 +1,9 @@
+open Prob23;;
+#load "prob23.cmo";;
+#trace interp;;
+open Prob4;;
+#load "prob4.cmo";;
+#trace Prob4.translate;;
+#use "prob4.ml";;
+#use "main.ml";;
+(*Prob4.interp (Prob4.Match(Prob4.A(Prob4.Int 4), "y", Prob4.Plus(Prob4.Int 3, Prob4.Var "y"), "z", Prob4.Var "z"))*)

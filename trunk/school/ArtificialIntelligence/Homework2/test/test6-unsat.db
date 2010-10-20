@@ -1,0 +1,67 @@
+// Successor predicates
+SuccTime(T0, T1)
+SuccTime(T1, T2)
+SuccTime(T2, T3)
+SuccTime(T3, T4)
+SuccTime(T4, T5)
+
+// Initial state
+In(City0,T0)
+!In(City1,T0)
+!In(City2,T0)
+!Visited(City0,T0)
+!Visited(City1,T0)
+!Visited(City2,T0)
+At(City0,Prod0)
+At(City1,Prod0)
+At(City2,Prod0)
+At(City3,Prod0)
+At(City1,Prod1)
+!At(City0,Prod1)
+!At(City2,Prod1)
+!At(City3,Prod1)
+At(City2,Prod2)
+!At(City0,Prod2)
+!At(City1,Prod2)
+!At(City3,Prod2)
+At(City3,Prod3)
+!At(City0,Prod3)
+!At(City1,Prod3)
+!At(City2,Prod3)
+!Have(Prod0, T0)
+!Have(Prod1, T0)
+!Have(Prod2, T0)
+!Have(Prod3, T0)
+
+// Goal state
+In(City0, T5)
+Have(Prod0,T4)
+Have(Prod1,T4)
+Have(Prod2,T4)
+Have(Prod3,T4)
+
+
+/********** Expected results **********
+// The problem cannot be satsfied, and your DPLL SAT solver should report that
+*/
+
+/**********  Walksat output **********
+// You should get roughly the same order of magnitude number of clauses
+CNF conversion took 0 secs
+Creating query predicates that are specified on command line...
+Set hard weight to 10
+creating mrf...
+number of grounded predicates = 729
+number of grounded clauses = 2951
+Time taken to construct MRF = 0.15 secs
+
+In the beginning: 
+Number of false clauses: 797
+Cost of false clauses: 7970
+Target cost: 0
+In the end: 
+Lowest num. of false clauses: 1
+Lowest cost of false clauses: 10
+Number of flips: 500000
+total time taken = 0.63 secs
+*/

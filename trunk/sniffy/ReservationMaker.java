@@ -12,7 +12,7 @@ public class ReservationMaker {
             + ARRIVE_DATE + "&contractCode=NRSO&parkId=75097&siteId=146537&lengthOfStay=2";
     private final String RG_BASE_URL = "http://www.recreation.gov/";
     private final String SW_BASE_URL = "http://swaggle.mobi/";
-    private final String BROWSER_START = "*chrome /usr/lib/firefox-3.0.11/firefox";
+    private final String BROWSER_START = "*chrome /usr/lib/firefox-3.5.9/firefox";
     private final Selenium rgSelenium;
     private final Selenium swSelenium;
     private final SeleniumServer server;

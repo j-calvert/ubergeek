@@ -1,0 +1,3 @@
+#!/bin/sh
+
+java MixtureOfGaussians $1 $2

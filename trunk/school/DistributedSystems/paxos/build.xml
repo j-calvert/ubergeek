@@ -1,0 +1,33 @@
+<?xml version="1.0"?>
+
+<project name="Paxos" default="build" basedir=".">
+	<property file="${basedir}/build.properties" />
+
+	<path id="classpath">
+		<pathelement location="${build.classes}" />
+		<fileset dir="${lib.dir}">
+			<include name="*.jar" />
+			<exclude name="${jar.name}.jar" />
+		</fileset>
+	</path>
+	
+	<target name="build">
+		<mkdir dir="${class.dir}" />
+		<javac target="${vmtarget}" source="${sourceversion}" encoding="${build.encoding}" destdir="${class.dir}" debug="${debug}" debuglevel="${debuglevel}" deprecation="${deprecation}">
+			<classpath refid="classpath" />
+			<src path="src/java" />
+		</javac>
+	</target>
+	
+	<target name="clean">
+		<delete dir="target" quiet="true" />
+		<delete dir="${build.dir}" quiet="true" />
+		<delete file="${lib.dir}/${jar.name}.jar" />
+	</target>
+	
+	<target name="jar" depends="build">
+		<jar jarfile="${lib.dir}/${jar.name}.jar" basedir="${class.dir}" includes="**/*" />
+		<delete dir="${build.dir}" quiet="true" />
+	</target>
+
+</project>
