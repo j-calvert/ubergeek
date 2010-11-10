@@ -41,6 +41,7 @@ public class AccelerationDial extends BaseDial {
 		dialplot.addScale(0, standarddialscale);
 		dialplot.mapDatasetToScale(0, 0);
 		dialplot.mapDatasetToScale(1, 0);
+		dialplot.setBackgroundAlpha(0);
 
 		StandardDialScale standarddialscale1 = new StandardDialScale(-40D, 40D,
 				-120D, -300D, 10D, 4);
