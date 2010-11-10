@@ -35,6 +35,8 @@ public class PositionDial extends BaseDial {
 		standarddialscale.setTickLabelFormatter(new DecimalFormat("#"));
 		dialplot.addScale(0, standarddialscale);
 		dialplot.mapDatasetToScale(0, 0);
+		dialplot.setBackgroundAlpha(1);
+
 
 		StandardDialScale standarddialscale1 = new StandardDialScale(0D, 100D,
 				-270D, -360D, 10D, 10);

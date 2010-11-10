@@ -2,8 +2,11 @@ package org.kitebot.bot;
 
 import java.applet.Applet;
 import java.awt.Color;
+import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Image;
+import java.awt.Rectangle;
+import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
 
@@ -37,54 +40,94 @@ public class Kitebot extends Applet {
 		super();
 		enableEvents(MouseEvent.MOUSE_EVENT_MASK);
 		enableEvents(MouseEvent.MOUSE_MOTION_EVENT_MASK);
+		enableEvents(ComponentEvent.COMPONENT_RESIZED);
 		setEnabled(true);
+	}
+
+	@Override
+	protected void processComponentEvent(ComponentEvent e) {
+		System.err.println("ID: " + e.getID());
+		System.err.println("RESIZE");
+		if (e.getID() == ComponentEvent.COMPONENT_RESIZED) {
+			Rectangle b = (e.getSource() != null ? ((Component) e.getSource())
+					.getBounds() : null);
+			if (b != null) {
+				init(b.width / scale, b.height / scale);
+			}
+		}
 	}
 
 	public void init() {
 		super.init();
-		init(120);
+		init(120, 100);
+		setSize(scale(120), scale(100));
+		new Sim().start();
 	}
 
-	private void init(int expnsn) {
+	private int scale = 8;
+
+	int scale(int i) {
+		return scale * i;
+	}
+
+	private void init(int fctx, int fcty) {
+		int fct = Math.min(fctx, fcty);
 		setLayout(null);
 		setBackground(Color.WHITE);
-		image = createImage(600, 600);
-		planetaryGear = new PlanetaryGear(245 * expnsn / 100,
-				175 * expnsn / 100, 17 * expnsn / 100, 20, 20, 60, 4);
-		windInput = new SliderInput(50 * expnsn / 100, 10 * expnsn / 100,
-				500 * expnsn / 100, 30 * expnsn / 100, new GearColor[] {
-						GearColor.SUN, GearColor.BRAKE, GearColor.LINE });
-		gennie = new SliderInput(50 * expnsn / 100, 50 * expnsn / 100,
-				500 * expnsn / 100, 20, new GearColor[] { GearColor.ANNULUS,
+		System.out.println("Resizing with fct: " + fct);
+		image = createImage(scale(fctx), scale(fcty));
+
+		int border = scale(fct / 20);
+		int sliderWidth = scale(fctx) - 2 * border;
+		int sliderHeight = scale(fcty * 1 / 15);
+		int plotterHeight = scale(fcty * 3 / 10);
+		
+		int currentTop = border;
+		windInput = new SliderInput(border, currentTop, sliderWidth, sliderHeight,
+				new GearColor[] { GearColor.SUN, GearColor.BRAKE,
+						GearColor.LINE });
+
+		currentTop += border + sliderHeight;
+		gennie = new SliderInput(border, currentTop, sliderWidth,
+				sliderHeight, new GearColor[] { GearColor.ANNULUS,
 						GearColor.BRAKE });
-		accelerationDial = new AccelerationDial(new Rectangle2D.Float(
-				10 * expnsn / 100, 100 * expnsn / 100, 150 * expnsn / 100,
-				150 * expnsn / 100));
-		velocityDial = new VelocityDial(new Rectangle2D.Float(
-				10 * expnsn / 100, 260 * expnsn / 100, 150 * expnsn / 100,
-				150 * expnsn / 100));
-		positionDial = new PositionDial(new Rectangle2D.Float(
-				170 * expnsn / 100, 260 * expnsn / 100, 150 * expnsn / 100,
-				150 * expnsn / 100));
-		plots = new ScrollingPlots(new Rectangle2D.Float(50 * expnsn / 100,
-				400 * expnsn / 100, 500 * expnsn / 100, 200 * expnsn / 100));
+
+		currentTop += border + sliderHeight;
+		int I = 2, J = 2;
+		int cellSize = Math.min((scale(fctx) - border) / I, (scale(fcty) - (2 * (sliderHeight + border) + plotterHeight + border)) / J);
+		int left = Math.max(border, scale(fctx) / 2 - ((cellSize + border) * I / 2 + border));
+		System.out.println("cellSize: " + cellSize);
+		Rectangle2D.Float[][] rects = new Rectangle2D.Float[I][J];
+		for (int i = 0; i < I; i++) {
+			for (int j = 0; j < J; j++) {
+				rects[i][j] = new Rectangle2D.Float((border + cellSize) * i
+						+ left, currentTop + (border + cellSize) * j, cellSize, cellSize);
+			}
+		}
+
+		planetaryGear = new PlanetaryGear((int) (rects[0][1].x + cellSize / 2),
+				(int) (rects[0][1].y + cellSize / 2), cellSize / 10, 20, 20,
+				60, 4);
+		accelerationDial = new AccelerationDial(rects[0][0]);
+		velocityDial = new VelocityDial(rects[1][0]);
+		positionDial = new PositionDial(rects[1][1]);
+		plots = new ScrollingPlots(new Rectangle2D.Float(border, scale(fcty) - plotterHeight - border, sliderWidth, plotterHeight));
 		this.add(planetaryGear);
 		this.add(windInput);
 		this.add(gennie);
 		this.add(velocityDial);
 		this.add(positionDial);
-		new Sim().start();
-		setSize(600, 600);
+		this.add(plots);
 	}
 
 	public void paint(Graphics g) {
 		Graphics gi = image.getGraphics();
 		windInput.paint(gi);
 		gennie.paint(gi);
+		plots.paint(gi);
 		accelerationDial.paint(gi);
 		velocityDial.paint(gi);
 		positionDial.paint(gi);
-		plots.paint(gi);
 		planetaryGear.paint(gi);
 		g.drawImage(image, 0, 0, null);
 	}

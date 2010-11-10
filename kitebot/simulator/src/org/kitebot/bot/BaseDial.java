@@ -43,11 +43,13 @@ public abstract class BaseDial extends Component implements ChangeListener {
 				255, 255, 255), new Point(), new Color(170, 170, 220));
 		DialBackground dialbackground = new DialBackground(gradientpaint);
 		dialplot.setBackground(dialbackground);
+		
 
 		createPlot(dialplot);
 
 		chart = new JFreeChart(dialplot);
-		chart.setBackgroundPaint(Color.white);
+		chart.setBackgroundPaint(new Color(1f,1f,1f,0f));
+		
 	}
 
 	protected abstract void createPlot(DialPlot dialplot);
