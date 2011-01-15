@@ -45,17 +45,17 @@ public class Kitebot extends Applet {
 	}
 
 	@Override
-	protected void processComponentEvent(ComponentEvent e) {
-		System.err.println("ID: " + e.getID());
-		System.err.println("RESIZE");
-		if (e.getID() == ComponentEvent.COMPONENT_RESIZED) {
-			Rectangle b = (e.getSource() != null ? ((Component) e.getSource())
-					.getBounds() : null);
-			if (b != null) {
-				init(b.width / scale, b.height / scale);
-			}
-		}
-	}
+//	protected void processComponentEvent(ComponentEvent e) {
+//		System.err.println("ID: " + e.getID());
+//		System.err.println("RESIZE");
+//		if (e.getID() == ComponentEvent.COMPONENT_RESIZED) {
+//			Rectangle b = (e.getSource() != null ? ((Component) e.getSource())
+//					.getBounds() : null);
+//			if (b != null) {
+//				init(b.width / scale, b.height / scale);
+//			}
+//		}
+//	}
 
 	public void init() {
 		super.init();
