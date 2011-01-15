@@ -1,0 +1,28 @@
+! _SelAll
+_Delete
+SetActiveViewport Front
+Extrude Cap=No 15.7
+
+_Box
+12.7,
+
+SetActiveViewport Front
+_Rectangle
+C
+0,0
+12.7,12.7
+_Rectangle
+C
+0,0
+10,10
+
+_SelAll
+_PlanarSrf
+_Delete
+
+SetActiveViewport Right
+_Extrude 220
+
+;SetActiveViewport Front
+;_Cylinder 0,0 D 22 0,60
+

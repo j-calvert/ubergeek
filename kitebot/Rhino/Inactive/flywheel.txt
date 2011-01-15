@@ -1,0 +1,9 @@
+! SetActiveViewport Front
+Polyline -20,158 -32,54 -36,54 -36,31 
+36,31 36,54 32,54 20,158 -20,158
+
+_SelAll
+_Revolve
+-20,0 20,0
+
+CPlane Origin All=Yes 36,0,0
