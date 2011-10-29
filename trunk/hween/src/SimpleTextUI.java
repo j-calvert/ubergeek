@@ -177,10 +177,13 @@ public class SimpleTextUI {
             new CmdBranch(movie, mov.getName(), "-fs", mov.getAbsolutePath());
         }
         new CmdBranch(movie, movieDir.getAbsolutePath() + "/*", "All");
-        CmdBranch kill = new CmdBranch(root, "kill", "killall");
+        new CmdBranch(root, "kbSim", "/home/jeremyc/bin/kbSim");
+        CmdBranch kill = new CmdBranch(root, "stop application", "killall");
         new CmdBranch(kill, "visuals", "-9", "projectM-pulseaudio");
         new CmdBranch(kill, "games", "qmc2");
         new CmdBranch(kill, "movies", "mplayer");
+        new CmdBranch(kill, "kbSim", "kbSim");
         new CmdBranch(kill, "wiiMote (careful)", "xwii");
+        
     }
 }
