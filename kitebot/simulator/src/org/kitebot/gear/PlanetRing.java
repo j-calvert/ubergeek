@@ -12,7 +12,7 @@ public class PlanetRing {
 			int numPinionGears, int planetGearRadius, int numPinionGearTeeth,
 			int ringGearCount, GearColor plntColor, GearColor annColor) {
 		planetGears = new Gear[numPinionGears];
-		planetCarrier = new PlanetCarrier(x, y, (int) planetCarrierRadius, 10,
+		planetCarrier = new PlanetCarrier(x, y, (int) planetCarrierRadius, 6,
 				annColor);
 
 		for (int i = 0; i < planetGears.length; i++) {

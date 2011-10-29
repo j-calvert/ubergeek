@@ -22,6 +22,6 @@ public class Const {
 	public final static double jm = 100;
 
 	// Display //
-	public final static int gearDepth = 6;
+	public final static int gearDepth = 4;
 
 }

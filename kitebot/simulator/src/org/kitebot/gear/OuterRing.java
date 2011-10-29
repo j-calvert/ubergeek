@@ -6,7 +6,7 @@ import org.kitebot.Const;
 
 public class OuterRing extends Gear {
 
-	int pixelWidth = 50;
+	int pixelWidth = 20;
 
 	public OuterRing(int x, int y, int rad, int numGearTeeth, GearColor gColor) {
 		super(x, y, rad, numGearTeeth, gColor);

@@ -2,10 +2,8 @@ package org.kitebot.bot;
 
 import java.applet.Applet;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Graphics;
 import java.awt.Image;
-import java.awt.Rectangle;
 import java.awt.event.ComponentEvent;
 import java.awt.event.MouseEvent;
 import java.awt.geom.Rectangle2D;
@@ -64,7 +62,7 @@ public class Kitebot extends Applet {
 		new Sim().start();
 	}
 
-	private int scale = 8;
+	private int scale = 4;
 
 	int scale(int i) {
 		return scale * i;
