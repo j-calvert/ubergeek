@@ -16,7 +16,8 @@ public class SimpleTextUI {
         padTo(41, 0, "=");
         System.out.println();
         prompt(here);
-        while ((s = in.readLine()) != null && s.length() != 0) {
+        while (true) {
+            s = in.readLine();
             padTo(41, 0, "=");
             System.out.println();
             try {
