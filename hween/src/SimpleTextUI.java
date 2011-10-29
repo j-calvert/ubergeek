@@ -3,6 +3,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
@@ -53,15 +54,15 @@ public class SimpleTextUI {
     private static void execute(CmdBranch here) {
         List<CmdBranch> ancestors = here.getAncestors();
         System.out.print("Executing:");
-		String[] cmdParts = new String[ancestors.size()];
-		int i = 0;
+        List<String> cmdParts = new ArrayList<String>();
         for (CmdBranch anc : ancestors) {
-            System.out.print(" " + anc.cmd);
-            cmdParts[i] = anc.cmd;
-            i++;
+            System.out.print(" " + Arrays.toString(anc.cmd));
+            for(String cmd : anc.cmd){  
+                cmdParts.add(cmd);
+            }
         }
         System.out.println();
-        Exec.run(cmdParts);
+        Exec.run(cmdParts.toArray(new String[0]));
     }
 
     private static void prompt(CmdBranch here) {
@@ -99,7 +100,7 @@ public class SimpleTextUI {
     }
 
     private static class CmdBranch {
-        final String cmd;
+        final String[] cmd;
         final String label;
         final List<CmdBranch> children = new ArrayList<CmdBranch>();
         final CmdBranch parent;
@@ -120,7 +121,7 @@ public class SimpleTextUI {
             this(parent, cmd, cmd);
         }
 
-        public CmdBranch(CmdBranch parent, String cmd, String label) {
+        public CmdBranch(CmdBranch parent, String label, String... cmd) {
             this.cmd = cmd;
             this.label = label;
             this.parent = parent;
@@ -167,18 +168,18 @@ public class SimpleTextUI {
     // This part is application specific
     static CmdBranch root = new CmdBranch(null, null);
     static {
-        new CmdBranch(root, "qmc2", "games");
-        new CmdBranch(root, "projectM-pulseaudio", "visuals");
-        CmdBranch movie = new CmdBranch(root, "mplayer", "movies");
+        new CmdBranch(root, "games", "qmc2");
+        new CmdBranch(root, "visuals", "projectM-pulseaudio");
+        CmdBranch movie = new CmdBranch(root, "movies", "mplayer");
         File movieDir = new File("/home/jeremyc/Vids");
         for (File mov : movieDir.listFiles()) {
-            new CmdBranch(movie, "-fs " + mov.getAbsolutePath(), mov.getName());
+            new CmdBranch(movie, mov.getName(), "-fs", mov.getAbsolutePath());
         }
         new CmdBranch(movie, movieDir.getAbsolutePath() + "/*", "All");
-        CmdBranch kill = new CmdBranch(root, "killall", "kill");
-        new CmdBranch(kill, "-9 projectM-pulseaudio", "visuals");
-        new CmdBranch(kill, "qmc2", "video games");
-        new CmdBranch(kill, "mplayer", "movies");
-        new CmdBranch(kill, "xwii", "wiiMote (careful)");
+        CmdBranch kill = new CmdBranch(root, "kill", "killall");
+        new CmdBranch(kill, "visuals", "-9", "projectM-pulseaudio");
+        new CmdBranch(kill, "games", "qmc2");
+        new CmdBranch(kill, "movies", "mplayer");
+        new CmdBranch(kill, "wiiMote (careful)", "xwii");
     }
 }
