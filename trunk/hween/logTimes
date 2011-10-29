@@ -1,0 +1,7 @@
+#!/bin/sh
+# Util to log timestamps (e.g. to see how long until a battery dies)
+while :
+do
+   date >> ~/date.log
+   sleep 10
+done

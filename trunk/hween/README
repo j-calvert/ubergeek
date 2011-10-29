@@ -1,0 +1,4 @@
+open a couple of shells in this folder, then run 
+nohup daemon &
+
+restartWii will kill xwii so the daemon will restart it

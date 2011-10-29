@@ -1,0 +1,8 @@
+#!/bin/sh
+export LD_LIBRARY_PATH=/usr/share/xwii
+
+while :
+do
+  ./start_xwii.py 
+  sleep 1
+done
