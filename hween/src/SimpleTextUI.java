@@ -50,14 +50,18 @@ public class SimpleTextUI {
         return here;
     }
 
-    // TODO Write this for real
     private static void execute(CmdBranch here) {
         List<CmdBranch> ancestors = here.getAncestors();
         System.out.print("Executing:");
+		String[] cmdParts = new String[ancestors.size()];
+		int i = 0;
         for (CmdBranch anc : ancestors) {
             System.out.print(" " + anc.cmd);
+            cmdParts[i] = anc.cmd;
+            i++;
         }
         System.out.println();
+        Exec.run(cmdParts);
     }
 
     private static void prompt(CmdBranch here) {
@@ -165,10 +169,10 @@ public class SimpleTextUI {
     static {
         new CmdBranch(root, "qmc2", "games");
         new CmdBranch(root, "projectM-pulseaudio", "visuals");
-        CmdBranch movie = new CmdBranch(root, "mplayer -fs", "movies");
+        CmdBranch movie = new CmdBranch(root, "mplayer", "movies");
         File movieDir = new File("/home/jeremyc/Vids");
         for (File mov : movieDir.listFiles()) {
-            new CmdBranch(movie, mov.getAbsolutePath(), mov.getName());
+            new CmdBranch(movie, "-fs " + mov.getAbsolutePath(), mov.getName());
         }
         new CmdBranch(movie, movieDir.getAbsolutePath() + "/*", "All");
         CmdBranch kill = new CmdBranch(root, "killall", "kill");
