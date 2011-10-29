@@ -7,15 +7,19 @@ import java.io.PrintWriter;
 
 public class Exec {
 
-    public static void run(String[] command) throws IOException {
-        Process exec = Runtime.getRuntime().exec(command);
-        StreamGobbler errorGobbler = new StreamGobbler(exec.getErrorStream(),
-                "ERROR");
+    public static void run(String[] command) {
+        try {
+			Process exec = Runtime.getRuntime().exec(command);
+			StreamGobbler errorGobbler = new StreamGobbler(exec.getErrorStream(),
+			        "ERROR");
 
-        StreamGobbler outputGobbler = new StreamGobbler(exec.getInputStream(),
-                "OUTPUT");
-        errorGobbler.start();
-        outputGobbler.start();
+			StreamGobbler outputGobbler = new StreamGobbler(exec.getInputStream(),
+			        "OUTPUT");
+			errorGobbler.start();
+			outputGobbler.start();
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 
     }
 
