@@ -1,0 +1,57 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="content-type" content="text/html; charset=utf-8" />
+<title>Google Visualization API Sample</title>
+<script type="text/javascript" src="http://www.google.com/jsapi"></script>
+<script type="text/javascript"
+	src="http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js"></script>
+
+<script type="text/javascript">
+	google.load('visualization', '1', {
+		packages : [ 'corechart' ]
+	});
+</script>
+<script type="text/javascript">
+	function drawVisualization() {
+		var data = new google.visualization.DataTable();
+		data.addColumn('string', 'Time');
+		data.addColumn('number', 'Washer 1 on');
+		data.addColumn('number', 'Washer 1 off');
+		data.addColumn('number', 'Washer 2 on');
+		data.addColumn('number', 'Washer 2 off');
+		data.addColumn('number', 'Dryer  1 on');
+		data.addColumn('number', 'Dryer  1 off');
+		data.addColumn('number', 'Dryer  2 on');
+		data.addColumn('number', 'Dryer  2 off');
+
+		var rows = $.ajax({
+			url : "/Washy/servlet/getdata",
+			dataType : "json",
+			async : false
+		}).responseText;
+		var rowsJson = eval(rows);
+		data.addRows(rowsJson);
+
+		var chart = new google.visualization.SteppedAreaChart(document
+				.getElementById('visualization'));
+
+		var options = {
+			width : 800,
+			height : 600,
+			vAxis : {
+				title : 'Accumulated Rating'
+			},
+			isStacked : true
+		};
+
+		chart.draw(data, options);
+	}
+
+	google.setOnLoadCallback(drawVisualization);
+</script>
+</head>
+<body style="font-family: Arial; border: 0 none;">
+	<div id="visualization" style="width: 800px; height: 600px;"></div>
+</body>
+</html>
