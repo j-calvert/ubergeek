@@ -76,12 +76,12 @@ public class WashyServlet extends HttpServlet {
     }
 
     private void collectDatapoint(String pathInfo) {
-        String[] parts = pathInfo.split(",");
-        List<Integer> dp = new ArrayList<Integer>();
-        for (int i = 1; i < 5; i++) {
-            dp.add(Integer.parseInt(parts[i]));
-        }
-        data.put(new Date(), dp);
+//        String[] parts = pathInfo.split(",");
+//        List<Integer> dp = new ArrayList<Integer>();
+//        for (int i = 1; i < 5; i++) {
+//            dp.add(Integer.parseInt(parts[i]));
+//        }
+//        data.put(new Date(), dp);
     }
 
 }
