@@ -1,5 +1,4 @@
-const int postingInterval = 100;
-const int nd = 4;     // number of chanenels
+const int nd = 4;     // number of channels
 const int ns = 10000; // number of samples
 const int nol = 10;   // number of outliers (10 outliers for 10000 = TP99.9)
 int data[nd];
@@ -9,10 +8,7 @@ void setup() {
 }
 
 void loop() {
-  Serial.println("gathering data");
   gatherData(data);
-  Serial.println("sleeping a bit");
-  delay(postingInterval);
 }
 
 void gatherData(int data[]) {
@@ -29,12 +25,10 @@ void gatherData(int data[]) {
   }
   for(int j = 0; j < nd; j++) {
     data[j] = topNol[j][nd - 1];
-    for(int i = 0; i < nol; i++) {
-      Serial.print(topNol[j][i]);
-      Serial.print(" ");
-    }
-    Serial.println();
+    Serial.print(topNol[j][nol - 1]);
+    Serial.print(" ");
   }
+  Serial.println();
 }
 
 void updateTopNol(int topNol[], int s) {
