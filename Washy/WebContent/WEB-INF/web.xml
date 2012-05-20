@@ -10,11 +10,27 @@
     <welcome-file>default.jsp</welcome-file>
   </welcome-file-list>
   <servlet>
-        <servlet-name>washy</servlet-name>
-        <servlet-class>org.wilana.washy.WashyServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>washy</servlet-name>
-        <url-pattern>/servlet/*</url-pattern>
-    </servlet-mapping>
+    <servlet-name>washy</servlet-name>
+    <servlet-class>org.wilana.washy.WashyServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>washy</servlet-name>
+    <url-pattern>/upload/*</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>graph</servlet-name>
+    <servlet-class>org.wilana.washy.GraphServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>graph</servlet-name>
+    <url-pattern>/graph/*</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <servlet-name>dump</servlet-name>
+    <servlet-class>org.wilana.washy.DumpServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>dump</servlet-name>
+    <url-pattern>/dump</url-pattern>
+  </servlet-mapping>
 </web-app>

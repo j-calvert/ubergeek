@@ -15,14 +15,16 @@
 
 
 //IPAddress ip(5,1,178,8);
-//IPAddress ip(192,168,2,211); // works when wired to WRTG54gG
+IPAddress ip(192,168,2,211); // works when wired to WRTG54gG
 //IPAddress ip(10,0,0,142);
-IPAddress ip(101,178,8,5);
+//IPAddress ip(101,178,8,5);
 byte mac[] = {0x90, 0xA2, 0xDA, 0x00, 0xEC, 0xF2};
-char serverName[] = "www.google.com";
+// char serverName[] = "www.google.com"; // works (with DNS)
+char serverName[] = "washy.wilana.org"; // works running on laptop (as of now)
 
 EthernetClient client;
 
+const int PORT = 80;
 long lastConnectionTime = 0;
 boolean lastConnected = false;
 const int postingInterval = 100;
@@ -105,14 +107,16 @@ void insert(int topNol[], int i, int s) {
 }
 
 void sendData(int data[]) {
-  if (client.connect(serverName, 80)) {
+  if (client.connect(serverName, PORT)) {
     Serial.println("connected");
-    client.print("GET /Washy/servlet/upload");
+    client.print("GET /upload/");
     for(int j = 0; j < nd; j++) {
-      client.print(",");
+      if(j > 0) {
+        client.print(",");
+      }
       client.print(data[j]);
     }
-    client.println("   HTTP/1.0");
+    client.println(" HTTP/1.0");
     client.println();
     client.stop();
     Serial.println("sent");    
