@@ -4,6 +4,7 @@ import java.awt.Color;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.util.TimeZone;
 
 import org.rrd4j.ConsolFun;
 import org.rrd4j.DsType;
@@ -91,6 +92,7 @@ public class RrdArchive {
         RrdGraphDef graphDef = new RrdGraphDef();
         long then = now - 60 * 60 * 1; // Now minus 1 hour ago
         graphDef.setTimeSpan(then, now);
+        graphDef.setTimeZone(TimeZone.getTimeZone("GMT-8:00"));
         graphDef.datasource(name, rrdFile.getCanonicalPath(), name, ConsolFun.AVERAGE);
         graphDef.line(name, new Color(0xFF, 0, 0), null, 2);
         graphDef.setTitle(name);
