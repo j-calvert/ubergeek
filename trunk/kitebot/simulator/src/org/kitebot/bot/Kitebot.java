@@ -62,7 +62,7 @@ public class Kitebot extends Applet {
 		new Sim().start();
 	}
 
-	private int scale = 4;
+	private int scale = 6;
 
 	int scale(int i) {
 		return scale * i;
