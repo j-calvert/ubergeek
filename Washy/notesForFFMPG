@@ -1,0 +1,11 @@
+BulkFileRename.java in Zoomey package.
+
+mogrify -crop 2592x1458+0+0 * # Get stuff in 16:9 ratio (from 2592x1944)
+
+mogrify -resize 1920x1080 * # Scale to 1080p resolution
+
+mogrify -extent 1920x1080 * # Add bits to edges if need be (maybe can be combined with the above)
+
+ffmpeg -f image2 -r 25 -i frame_%d.jpg -vcodec libx264 -vpre hq -crf 22 video.flv
+
+ffmpeg -i video.flv -i AriaSnippet.wav -vcodec copy -acodec libmp3lame videoWsound.flv
